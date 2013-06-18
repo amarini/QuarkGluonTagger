@@ -15,6 +15,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include "TROOT.h"
+#include "TStyle.h"
+#include "TLegend.h"
 #include "TDirectory.h"
 #include "TCanvas.h"
 
@@ -813,7 +815,7 @@ A.h_mc->DrawNormalized("HIST SAME");
 
 */
 
-Analyzer *Check(float PtMin,float PtMax,float RhoMin,float RhoMax, float EtaMin,float EtaMax, float alpha, float beta , const char * varName="QGLHisto",float lmin=0,float lmax=1){
+Analyzer *Check(float PtMin,float PtMax,float RhoMin,float RhoMax, float EtaMin,float EtaMax, float alpha, float beta , const char * varName="QGLHisto",float lmin=0,float lmax=1,TCanvas **pC=NULL){
 Analyzer *A=new Analyzer();
 TChain *mc=new TChain("Hbb/events");
 TChain *data=new TChain("Hbb/events");
@@ -827,7 +829,9 @@ A->alpha=1;
 A->beta=0;
 A->Loop(mc,2);
 A->Loop(data,1);
-TH1F* h_mc0=(TH1F*)A->h_mc->Clone("h_mc0");h_mc0->SetLineColor(kGreen);
+TH1F* h_mc0=(TH1F*)A->h_mc->Clone("h_mc0");h_mc0->SetLineColor(kGreen+2);
+A->lmin=lmin;
+A->lmax=lmax;
 A->alpha=alpha;
 A->beta=beta;
 A->Loop(mc,2);
@@ -836,12 +840,24 @@ A->Loop(mc,2);
 //A->a_q=0.91;A->b_q=0.15;A->a_g=1.02;A->b_g=0.13;
 //A->LoopFast();
 
+gStyle->SetOptStat(0);
 TCanvas *c=new TCanvas("c","c",800,800);
-A->h_mc->DrawNormalized("HIST");
+A->h_mc->SetLineColor(kBlue);
+	A->h_mc->GetXaxis()->SetTitle(varName);
+	A->h_mc->SetMinimum(0);
+TH1F * hmc1=(TH1F*)A->h_mc->DrawNormalized("HIST");
+	hmc1->GetYaxis()->SetRangeUser(0,0.20);
+
 h_mc0->SetLineWidth(2); h_mc0->SetLineStyle(2);
-h_mc0->DrawNormalized("HIST");
+h_mc0->DrawNormalized("HIST SAME");
 A->h_data->SetMarkerStyle(20);
 A->h_data->DrawNormalized("P SAME");
+	TLegend *L=new TLegend(0.4,.7,.6,.89);
+	L->AddEntry(A->h_data,"data");
+	L->AddEntry(h_mc0,"mc");
+	L->AddEntry(A->h_mc,"mc+syst");
+	L->Draw();
+if(pC!=NULL) (*pC)=c;
 
 return A;
 }
