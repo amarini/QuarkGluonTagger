@@ -64,6 +64,7 @@ public:
 	void ComputeDoubleMinFast();
 	void LoopFast();
 	virtual void LoadBins();
+	void ResetBins();
 //private:
 	TChain *t_mc;
 	TChain *t_data;
@@ -238,6 +239,13 @@ void BaseAnalyzer::LoadBins(){
 		
 		EtaBins.push_back(  pair<float,float>(0,2) );
 		EtaBins.push_back(  pair<float,float>(3,4.7) );
+	return;
+	}
+void BaseAnalyzer::ResetBins(){
+	PtBins.clear();
+	EtaBins.clear();
+	RhoBins.clear();
+	return;
 	}
 
 void BaseAnalyzer::SpanMin(){
@@ -258,8 +266,9 @@ void BaseAnalyzer::SpanMin(){
 		if(varName=="QGLMLP")t=2;
 		if(varName=="QGLHisto")t=3;
 		int bin=(p+1)+(r+1)*10+(e+1)*100 + t*1000;
-		printf("//%s: Pt=%.0f_%.0f Rho=%.0f_%.0f Eta=%.0f_%.0f\n",varName.c_str(),PtMin,PtMax,RhoMin,RhoMax,EtaMin,EtaMax);
-		printf("case %d:",bin);
+		//OLD printf("//%s: Pt=%.0f_%.0f Rho=%.0f_%.0f Eta=%.0f_%.0f\n",varName.c_str(),PtMin,PtMax,RhoMin,RhoMax,EtaMin,EtaMax);
+		//OLD printf("case %d:",bin);
+		printf("%s %.0f %.0f %.0f %.0f %.1f %.1f",varName.c_str(),PtMin,PtMax,RhoMin,RhoMax,EtaMin,EtaMax);
 		ComputeMinFast(); //Be Fast!
 		//ComputeDoubleMin(); //Be Slow!
 		//ComputeDoubleMinFast(); //Be Fast!
@@ -445,7 +454,8 @@ void BaseAnalyzer::ComputeMinFast(){
 			}
 	double m0,m1;
 	R=MinG(g2,&m0,&m1);
-	printf("a=%.3f;b=%.3f;lmin=%.3f;lmax=%.3f;break;//chi2=%.3lf; chi2_0=%.3lf\n",R.first,R.second,lmin,lmax,m0,m1);
+	//OLD printf("a=%.3f;b=%.3f;lmin=%.3f;lmax=%.3f;break;//chi2=%.3lf; chi2_0=%.3lf\n",R.first,R.second,lmin,lmax,m0,m1);
+	printf(" %.3f %.3f %.3f %.3f \n//chi2=%.3lf; chi2_0=%.3lf\n",R.first,R.second,lmin,lmax,m0,m1);
 	{
 	TFile *out=TFile::Open("output.root","UPDATE");out->cd();
 	for(int i=0;i<int(h_mcFast.size());i++)
