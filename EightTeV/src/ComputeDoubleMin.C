@@ -193,7 +193,7 @@ A->h_mc->SetLineColor(kBlue);
 	A->h_mc->GetXaxis()->SetTitle(varName);
 	A->h_mc->SetMinimum(0);
 TH1F * hmc1=(TH1F*)A->h_mc->DrawNormalized("HIST");
-	hmc1->GetYaxis()->SetRangeUser(0,0.20);
+	hmc1->GetYaxis()->SetRangeUser(0,0.30);
 
 h_mc0->SetLineWidth(2); h_mc0->SetLineStyle(2);
 h_mc0->DrawNormalized("HIST SAME");
