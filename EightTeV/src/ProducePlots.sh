@@ -2,6 +2,7 @@
 
 FILE=../data/SystDatabase.txt
 FILE=./SystZJet.txt
+#FILE=./ProducePlot.txt
 mkdir -p ~/work/PlotQG/
 
 
@@ -20,8 +21,8 @@ root  -l -b <<EOF
 .L ComputeDoubleMin${type2}.C+
 TCanvas *c;
 Check(${ptmin},${ptmax},${rhomin},${rhomax},${etamin},${etamax},${alpha},${beta},"${varname}",${lmin},${lmax},&c);
-c->SaveAs("~/work/PlotQG/${type}SystValidation_${varname}_pt${ptmin}_${ptmax}_eta${etamin}_${etamax}_rho${rhomin}_${rhomax}.pdf")
-c->SaveAs("~/work/PlotQG/${type}SystValidation_${varname}_pt${ptmin}_${ptmax}_eta${etamin}_${etamax}_rho${rhomin}_${rhomax}.root")
+c->SaveAs("~/work/PlotQG/${type1}_SystValidation_${varname}_pt${ptmin}_${ptmax}_eta${etamin}_${etamax}_rho${rhomin}_${rhomax}.pdf")
+c->SaveAs("~/work/PlotQG/${type1}_SystValidation_${varname}_pt${ptmin}_${ptmax}_eta${etamin}_${etamax}_rho${rhomin}_${rhomax}.root")
 .q
 EOF
 done
@@ -57,4 +58,4 @@ done
 check_parsing;
 do_zjet;
 #do_zjet2;
-#do_dijet;
+do_dijet;

@@ -54,6 +54,8 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 		if(type&1) {delete h_data; CreateHisto(1);}
 		if(type&10) {delete h_mc; CreateHisto(2);} //8+2
 		if(type&32) {varAll.clear();} //reset varAll
+		
+		//bool printed=false;
 
 		for(int i=0;i<t->GetEntries();i++) 
 			{
@@ -77,6 +79,7 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 				//printf("passed selection - type 1 --> %.3f - %.3f\n",treeVar[varName],treeVar[varName+"Fwd"]);
 				string var=varName;
 				if(EtaMin>2.5)var+="Fwd"; //only in data fwd
+				//if(!printed) {cout<<"VARIABLE:====="<<var<<endl; printed=true;}
 				alpha=1; beta=0;
 				FillHisto(h_data,var);
 				}	
