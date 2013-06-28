@@ -269,9 +269,9 @@ void BaseAnalyzer::SpanMin(){
 		//OLD printf("//%s: Pt=%.0f_%.0f Rho=%.0f_%.0f Eta=%.0f_%.0f\n",varName.c_str(),PtMin,PtMax,RhoMin,RhoMax,EtaMin,EtaMax);
 		//OLD printf("case %d:",bin);
 		printf("%s %.0f %.0f %.0f %.0f %.1f %.1f",varName.c_str(),PtMin,PtMax,RhoMin,RhoMax,EtaMin,EtaMax);
-		ComputeMinFast(); //Be Fast!
+		//ComputeMinFast(); //Be Fast!
 		//ComputeDoubleMin(); //Be Slow!
-		//ComputeDoubleMinFast(); //Be Fast!
+		ComputeDoubleMinFast(); //Be Fast!
 		}
 	printf("DONE\n");	
 	}
@@ -478,11 +478,10 @@ void BaseAnalyzer::ComputeDoubleMinFast(){
 	Loop(t_mc,32);
 
 	pair<float,float> R_q,R_g;
-	//R_q=SmearDoubleMinFast(1,0,1,0,0); //
-	//R_g=SmearDoubleMinFast(R_q.first,R_q.second,1,0,1); //
-	//R_q=SmearDoubleMinFast(R_q.first,R_q.second,R_g.first,R_g.second,0,1); //
-	//R_g=SmearDoubleMinFast(R_q.first,R_q.second,R_g.first,R_g.second,1,1); //
 	R_g=SmearDoubleMinFast(1,0,1,0,1); //
+	R_q=SmearDoubleMinFast(1,0,R_g.first,R_g.second,0); //
+	R_g=SmearDoubleMinFast(R_q.first,R_q.second,R_g.first,R_g.second,1); //
+	R_q=SmearDoubleMinFast(R_q.first,R_q.second,R_g.first,R_g.second,0,1); //
 
 	printf("a_q=%.3f;b_q=%.3f;a_g=%.3f;b_g=%.3f;lmin=%.3f;lmax=%.3f;break;\n",R_q.first,R_q.second,R_g.first,R_g.second,lmin,lmax);
 	}

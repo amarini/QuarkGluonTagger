@@ -56,6 +56,6 @@ done
 }
 
 check_parsing;
-do_zjet;
+#do_zjet;
 #do_zjet2;
 do_dijet;
