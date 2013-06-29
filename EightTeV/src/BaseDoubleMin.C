@@ -250,6 +250,7 @@ void BaseAnalyzer::ResetBins(){
 
 void BaseAnalyzer::SpanMin(){
 
+		ResetBins();
 		LoadBins();
 
 	for ( int e=0; e< int(EtaBins.size());e++)
