@@ -456,7 +456,7 @@ void BaseAnalyzer::ComputeMinFast(){
 	double m0,m1;
 	R=MinG(g2,&m0,&m1);
 	//OLD printf("a=%.3f;b=%.3f;lmin=%.3f;lmax=%.3f;break;//chi2=%.3lf; chi2_0=%.3lf\n",R.first,R.second,lmin,lmax,m0,m1);
-	printf(" %.3f %.3f %.3f %.3f \n//chi2=%.3lf; chi2_0=%.3lf\n",R.first,R.second,lmin,lmax,m0,m1);
+	printf(" %.3f %.3f %.3f %.3f \n#chi2=%.3lf; chi2_0=%.3lf\n",R.first,R.second,lmin,lmax,m0,m1);
 	{
 	TFile *out=TFile::Open("output.root","UPDATE");out->cd();
 	for(int i=0;i<int(h_mcFast.size());i++)
@@ -484,7 +484,7 @@ void BaseAnalyzer::ComputeDoubleMinFast(){
 	R_g=SmearDoubleMinFast(R_q.first,R_q.second,R_g.first,R_g.second,1); //
 	R_q=SmearDoubleMinFast(R_q.first,R_q.second,R_g.first,R_g.second,0,1); //
 
-	printf("a_q=%.3f;b_q=%.3f;a_g=%.3f;b_g=%.3f;lmin=%.3f;lmax=%.3f;break;\n",R_q.first,R_q.second,R_g.first,R_g.second,lmin,lmax);
+	printf("%.3f %.3f %.3f %.3f %.3f %.3f \n",R_q.first,R_q.second,R_g.first,R_g.second,lmin,lmax);
 	}
 
 void BaseAnalyzer::LoopFast()
@@ -495,8 +495,10 @@ CreateHisto(2);
 for(int z=0;z<int(varAll.size());++z){ 
 	{alpha=1;beta=0;}
 	if(varAll[z].pdgId == 21){alpha=a_g; beta=b_g; } 
-	if(fabs(varAll[z].pdgId) <5 ) {alpha=a_q;beta = b_q;}if( fabs(treeVarInt["pdgIdPartJet0"])== 0) {alpha=1;beta=0;}
-	if(fabs(varAll[z].pdgId) == 0) {alpha=1;beta=0;}
+	if(fabs(varAll[z].pdgId) <5 ) {alpha=a_q;beta = b_q;}
+//	if( fabs(treeVarInt["pdgIdPartJet0"])== 0) {alpha=1;beta=0;}
+	if(fabs(varAll[z].pdgId) == 0) {alpha=a_g;beta=b_g;}
+	if(fabs(varAll[z].pdgId) == 999) {alpha=a_g;beta=b_g;}
 
 	treeVar[varName]=varAll[z].value;
 	if(varAll[z].weight>=0) {treeVar["eventWeight"]=varAll[z].weight;treeVar["PUReweight"]=1;}

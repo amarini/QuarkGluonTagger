@@ -21,10 +21,16 @@ using namespace std;
 
 class Analyzer: public BaseAnalyzer {
 public:
-	Analyzer(): BaseAnalyzer() {}
+	Analyzer(): BaseAnalyzer() { TFile *f=TFile::Open("/afs/cern.ch/user/p/pandolf/public/puWeights.root");
+					if(f==NULL) cout<< "NO PUW FILE"<<endl;
+					puw=(TH1F*)f->Get("puweights");
+					if(puw==NULL)cout<<"NO PUW TREE"<<endl;
+					}
 	void Loop(TChain *t,int type); //type|=4 : compute lmin,lmax; type|=1 data type |=2 mc
 	void LoadBins();
+	TH1F * puw;
 };
+
 
 void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 data type |=2 mc
 
@@ -73,6 +79,9 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 			if( treeVarInt["nPFCand_QC_ptCutJet"] <=0 )continue;
 			if( treeVar["ptD_QCJet0"] <=0 )continue;
 			//printf("Count 4 -- mult\n");
+			
+			treeVar["eventWeight"]=1;
+			treeVar["PUReWeight"]=puw->GetBinContent(puw->FindBin(int(treeVar["rhoPF"])));
 			//---------------------------
 		
 			if(type&1){
@@ -96,7 +105,8 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 				alpha=1;beta=0;
 				if( treeVarInt["pdgIdPartJet0"] ==21) {alpha=a_g;beta=b_g;}
 				if( fabs(treeVarInt["pdgIdPartJet0"]) < 5) {alpha=a_q;beta=b_q;}
-				if( fabs(treeVarInt["pdgIdPartJet0"])== 0) {alpha=1;beta=0;}
+				if( fabs(treeVarInt["pdgIdPartJet0"])== 0) {alpha=a_g;beta=b_g;}
+				if( fabs(treeVarInt["pdgIdPartJet0"])== 999) {alpha=a_g;beta=b_g;}
 
 				FillHisto(h_mc,varName);
 				}
