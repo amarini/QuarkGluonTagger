@@ -15,6 +15,11 @@
 #include <cstdlib>
 #include "TROOT.h"
 #include "TCanvas.h"
+//---compute QGL & QGLMPL on the fly
+#include "/afs/cern.ch/user/a/amarini/work/CMSSW_5_3_6/src/QuarkGluonTagger/EightTeV/src/QGMLPCalculator.cc"
+#include "/afs/cern.ch/user/a/amarini/work/CMSSW_5_3_6/src/QuarkGluonTagger/EightTeV/src/parameters.cc"
+#include "/afs/cern.ch/user/a/amarini/work/CMSSW_5_3_6/src/QuarkGluonTagger/EightTeV/src/QGLikelihoodCalculator.cc"
+#include "/afs/cern.ch/user/a/amarini/work/CMSSW_5_3_6/src/QuarkGluonTagger/EightTeV/src/Bins.cc"
 #include "BaseDoubleMin.C"
 
 using namespace std;
@@ -25,10 +30,15 @@ public:
 					if(f==NULL) cout<< "NO PUW FILE"<<endl;
 					puw=(TH1F*)f->Get("puweights");
 					if(puw==NULL)cout<<"NO PUW TREE"<<endl;
+					qgl=new QGLikelihoodCalculator("/afs/cern.ch/user/a/amarini/work/CMSSW_5_3_6/src/QuarkGluonTagger/EightTeV/data/");//ReducedHisto_2012.root");
+					qgmlp=new QGMLPCalculator("MLP","/afs/cern.ch/user/a/amarini/work/CMSSW_5_3_6/src/QuarkGluonTagger/EightTeV/data/",true); //prob
 					}
 	void Loop(TChain *t,int type); //type|=4 : compute lmin,lmax; type|=1 data type |=2 mc
 	void LoadBins();
 	TH1F * puw;
+//--- QGL QGMLP
+	QGLikelihoodCalculator *qgl;
+	QGMLPCalculator *qgmlp;
 };
 
 
@@ -48,15 +58,20 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 		treeVar["etaJet0"]		=-999;t->SetBranchAddress("etaJet0",		&treeVar["etaJet0"]		);
 		treeVarInt["pdgIdPartJet0"]	=-999;if(type!=1)t->SetBranchAddress("pdgIdPartJet0",	&treeVarInt["pdgIdPartJet0"]); //only mc 
 
-		treeVar["QGLHisto"]		=-999;t->SetBranchAddress("QGLHisto",		&treeVar["QGLHisto"]		);
-		treeVar["QGLMLP"]		=-999;t->SetBranchAddress("QGLMLP",		&treeVar["QGLMLP"]		);
-		treeVar["QGLHistoFwd"]		=-999;if(type==1)t->SetBranchAddress("QGLHistoFwd",	&treeVar["QGLHistoFwd"]		); //only data
-		treeVar["QGLMLPFwd"]		=-999;if(type==1)t->SetBranchAddress("QGLMLPFwd",	&treeVar["QGLMLPFwd"]		); //only data
+		//treeVar["QGLHisto"]		=-999;t->SetBranchAddress("QGLHisto",		&treeVar["QGLHisto"]		);
+		//treeVar["QGLMLP"]		=-999;t->SetBranchAddress("QGLMLP",		&treeVar["QGLMLP"]		);
+		//treeVar["QGLHistoFwd"]		=-999;if(type==1)t->SetBranchAddress("QGLHistoFwd",	&treeVar["QGLHistoFwd"]		); //only data
+		//treeVar["QGLMLPFwd"]		=-999;if(type==1)t->SetBranchAddress("QGLMLPFwd",	&treeVar["QGLMLPFwd"]		); //only data
 		
 		treeVar["PUReWeight"]		=1   ;if(type!=1)t->SetBranchAddress("PUReWeight",	&treeVar["PUReWeight"]		); //only mc
 		treeVar["eventWeight"]		=1   ;if(type!=1)t->SetBranchAddress("eventWeight",	&treeVar["eventWeight"]		); //only mc
 		
 		treeVarInt["event"]		=-999;t->SetBranchAddress("event",		&treeVarInt["event"]		);
+		treeVar["ptDJet0"]			=-999;t->SetBranchAddress("ptDJet0",			&treeVar["ptDJet0"]			);
+		treeVar["nChargedJet0"]			=-999;t->SetBranchAddress("nChargedJet0",			&treeVar["nChargedJet0"]			);
+		treeVar["nNeutralJet0"]			=-999;t->SetBranchAddress("nNeutralJet0",			&treeVar["nNeutralJet0"]			);
+	
+		
 
 		if(type&4) {lmin=1.0;lmax=0;} //reset lmin-lmax
 		if(type&1) {delete h_data; CreateHisto(1);}
@@ -81,6 +96,49 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 			if( treeVarInt["nPFCand_QC_ptCutJet"] <=0 )continue;
 			if( treeVar["ptD_QCJet0"] <=0 )continue;
 			//printf("Count 4 -- mult\n");
+
+		//COMPUTE MLP/QGL ON THE FLY	
+		map<TString,float> variables_MLP;	
+		map<TString,float> variables_corr_MLP;	
+		float sub_data=0.0;
+		if(fabs(treeVar["etaJet0"])>2.5 && type==1)sub_data=1.0;
+			treeVar["mult"]=float(treeVarInt["nPFCand_QC_ptCutJet"])-sub_data;
+			treeVar["axis1"]=treeVar["axis1_QCJet0"];
+			treeVar["axis2"]=treeVar["axis2_QCJet0"];
+			treeVar["ptD"]  =treeVar["ptD_QCJet0"] ;
+		//cout << "QGL Variables: pt "<<treeVar["ptJet0"]<<" eta "<<treeVar["etaJet0"] <<" ptD "<<treeVar["ptD"]<<" axis1 "<<treeVar["axis1"]<<" mult "<<treeVar["mult"]<<endl;
+		if(varName=="QGLHisto")treeVar["QGLHisto"] = qgl->computeQGLikelihood2012(treeVar["ptJet0"],treeVar["etaJet0"],treeVar["rho"],treeVar["mult"],treeVar["ptD"],treeVar["axis2"]);
+			treeVar["QGLHistoFwd"] = treeVar["QGLHisto"];
+			//MLP
+			if(varName=="QGLMLP"){	
+				variables_MLP["axis1"]=treeVar["axis1_QCJet0"];
+				variables_MLP["axis2"]=treeVar["axis2_QCJet0"];
+				variables_MLP["ptD"]=treeVar["ptD_QCJet0"];
+				variables_MLP["mult"]=treeVarInt["nPFCand_QC_ptCutJet"]-treeVar["nNeutralJet0"];//jetChgPart_QC[0];
+				
+				variables_MLP["pt"]=treeVar["ptJet0"];
+				variables_MLP["eta"]=treeVar["etaJet0"];
+				variables_MLP["rho"]=treeVar["rhoPF"];
+				
+				if(fabs(treeVar["etaJet0"])>2.5){
+					variables_MLP["axis1"]=treeVar["axis1_QCJet0"];
+					variables_MLP["axis2"]=treeVar["axis2_QCJet0"];
+					variables_MLP["ptD"]=treeVar["ptD_QCJet0"];
+					variables_MLP["mult"]=treeVar["nPFCand_QC_ptCutJet"]-sub_data;
+					
+					}
+				
+				variables_corr_MLP["axis1"] = variables_MLP["axis1"];
+				variables_corr_MLP["axis2"] = variables_MLP["axis2"];
+				variables_corr_MLP["ptD"] = variables_MLP["ptD"];
+				variables_corr_MLP["mult"] = variables_MLP["mult"];
+			
+				//variables_corr_MLP=qgmlp->TEST(variables_MLP,variables_corr_MLP);
+				
+				treeVar["QGLMLP"]=qgmlp->QGvalue(variables_MLP);
+				treeVar["QGLMLPFwd"]=treeVar["QGLMLP"];
+			}
+		//----------------DONE----------------
 			
 			treeVar["eventWeight"]=1;
 			treeVar["PUReWeight"]=puw->GetBinContent(puw->FindBin(int(treeVar["rhoPF"])));

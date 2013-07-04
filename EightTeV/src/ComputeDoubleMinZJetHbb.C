@@ -288,7 +288,7 @@ void Analyzer::LoadBins(){
 
 
 
-int ComputeDoubleMinDiJet(){
+int ComputeDoubleMinZJetHbb(){
 	system("[ -f output.root ] && rm output.root");
 	TChain *mc=new TChain("Hbb/events");
 	TChain *data=new TChain("Hbb/events");
@@ -316,33 +316,6 @@ int ComputeDoubleMinDiJet(){
 	A.SpanMin();
 	return 0;
 	}
-/*
-.L ComputeDoubleMinDiJet.C+
-TChain *mc=new TChain("Hbb/events");
-TChain *data=new TChain("Hbb/events");
-mc->Add("/afs/cern.ch/work/s/sunil/public/forTom/analysis_flatQCD_P6_Dijets.root");
-data  ->Add("/afs/cern.ch/work/s/sunil/public/forTom/analysis_data2012_JetMon_Dijets.root");
-
-Analyzer A;
-A.nstep=20;
-A.varName="QGLHisto";
-//A.varName="mult";A.nBins=50;A.xMin=0;A.xMax=50;A.lmin=0;A.lmax=100;
-//A.varName="axis1";A.nBins=50;A.xMin=0;A.xMax=.5;
-//A.varName="axis2";A.nBins=50;A.xMin=0;A.xMax=.5;
-//A.varName="ptD";A.nBins=50;A.xMin=0;A.xMax=1.0001;
-A.varName="rho";A.nBins=50;A.xMin=0;A.xMax=50;A.lmin=0;A.lmax=100;
-A.RhoMin=0; A.RhoMax=100;A.PtMin=40;A.PtMax=60; A.EtaMin=0;A.EtaMax=2.0;
-A.CreateHisto();
-A.SetTrees(mc,data);
-A.alpha=1;
-A.beta=0;
-A.Loop(mc,2);
-A.Loop(data,1);
-A.h_data->SetMarkerStyle(20);
-A.h_data->DrawNormalized("P");
-A.h_mc->DrawNormalized("HIST SAME");
-
-*/
 
 Analyzer *Check(float PtMin,float PtMax,float RhoMin,float RhoMax, float EtaMin,float EtaMax, float alpha, float beta , const char * varName="QGLHisto",float lmin=0,float lmax=1,TCanvas **pC=NULL){
 Analyzer *A=new Analyzer();

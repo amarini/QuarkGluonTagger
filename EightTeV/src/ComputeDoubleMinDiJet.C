@@ -142,14 +142,6 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 			map<TString,float> variables_corr_MLP;	
 			//map<TString,float> variables_QGL;	
 			
-//			variables_QGL["axis1"]= jetAxis_QC[0][0];
-//			variables_QGL["axis2"]= jetAxis_QC[1][0];
-//			variables_QGL["ptd"] = jetPtD_QC[0];
-//			variables_QGL["mult"] = jetChgPart_QC[0]+jetNeutralPart_ptcut[0];
-//			variables_QGL["pt"] = jetPt[0];
-//			variables_QGL["eta"] = jetEta[0];
-//			variables_QGL["rho"] = rho;
-	
 			//fprintf(stderr,"_______E3:nvtx: %d\n",treeVarInt["nvtx"]);
 			if(fabs(jetEta[0])<2.5 && (jetBeta[0]<(1.0 -0.2*TMath::Log(treeVarInt["nvtx"]-0.67)))) continue;	
 			//fprintf(stderr,"-----F\n");

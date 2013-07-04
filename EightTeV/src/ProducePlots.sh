@@ -2,6 +2,7 @@
 
 FILE=../data/SystDatabase.txt
 FILE=./SystZJet.txt
+FILE=./SystDoubleMinZJetFineBins.txt
 #FILE=./ProducePlot.txt
 mkdir -p ~/work/PlotQG/
 
@@ -56,6 +57,6 @@ done
 }
 
 check_parsing;
-#do_zjet;
+do_zjet;
 #do_zjet2;
-do_dijet;
+#do_dijet;

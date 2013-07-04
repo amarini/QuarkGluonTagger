@@ -109,7 +109,7 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 					}
 				}
 			if(type&32){ 
-					float weight=treeVar["evenWeight"]*treeVar["PUReweight"];
+					float weight=treeVar["eventWeight"]*treeVar["PUReWeight"];
 					//varAll.push_back(pair<int,float>(treeVarInt["pdgIdPartJet0"],treeVar[varName]));
 					varAll.push_back(TRIO(treeVarInt["pdgIdPartJet0"],treeVar[varName],weight)); //w=-1 default
 				}
@@ -186,10 +186,6 @@ A->lmax=lmax;
 A->alpha=alpha;
 A->beta=beta;
 A->Loop(mc,2);
-//DoubleMin
-//A->Loop(mc,32);
-//A->a_q=0.91;A->b_q=0.15;A->a_g=1.02;A->b_g=0.13;
-//A->LoopFast();
 
 gStyle->SetOptStat(0);
 TCanvas *c=new TCanvas("c","c",800,800);
@@ -214,3 +210,49 @@ if(pC!=NULL) (*pC)=c;
 return A;
 }
 
+
+Analyzer *CheckDouble(float PtMin,float PtMax,float RhoMin,float RhoMax, float EtaMin,float EtaMax, float a_q, float b_q, float a_g, float b_g , const char * varName="QGLHisto",float lmin=0,float lmax=1,TCanvas **pC=NULL){
+Analyzer *A=new Analyzer();
+	TChain *mc=new TChain("tree_passedEvents");
+	TChain *data=new TChain("tree_passedEvents");
+		data->Add("/afs/cern.ch/user/a/amarini/work/GluonTag/ZJet2/ZJet_DoubleMu*.root");
+		data->Add("/afs/cern.ch/user/a/amarini/work/GluonTag/ZJet2/ZJet_DoubleE*.root");
+
+		mc  ->Add("/afs/cern.ch/user/a/amarini/work/GluonTag/ZJet2/ZJet_DY*.root");
+A->nstep=20; A->varName=varName;
+A->RhoMin=RhoMin; A->RhoMax=RhoMax;A->PtMin=PtMin;A->PtMax=PtMax; A->EtaMin=EtaMin;A->EtaMax=EtaMax;
+A->CreateHisto();
+A->SetTrees(mc,data);
+A->alpha=1;
+A->beta=0;
+A->Loop(mc,2);
+A->Loop(data,1);
+TH1F* h_mc0=(TH1F*)A->h_mc->Clone("h_mc0");h_mc0->SetLineColor(kGreen);
+A->lmin=lmin;
+A->lmax=lmax;
+//DoubleMin
+A->Loop(mc,32);
+A->a_q=a_q;A->b_q=b_q;A->a_g=a_g;A->b_g=b_g;
+A->LoopFast();
+
+gStyle->SetOptStat(0);
+TCanvas *c=new TCanvas("c","c",800,800);
+A->h_mc->SetLineColor(kBlue);
+	A->h_mc->GetXaxis()->SetTitle(varName);
+	A->h_mc->SetMinimum(0);
+TH1F * hmc1=(TH1F*)A->h_mc->DrawNormalized("HIST");
+	hmc1->GetYaxis()->SetRangeUser(0,0.30);
+
+h_mc0->SetLineWidth(2); h_mc0->SetLineStyle(2);
+h_mc0->DrawNormalized("HIST SAME");
+A->h_data->SetMarkerStyle(20);
+A->h_data->DrawNormalized("P SAME");
+	TLegend *L=new TLegend(0.4,.7,.6,.89);
+	L->AddEntry(A->h_data,"data");
+	L->AddEntry(h_mc0,"mc");
+	L->AddEntry(A->h_mc,"mc+syst");
+	L->Draw();
+if(pC!=NULL) (*pC)=c;
+
+return A;
+}

@@ -269,12 +269,12 @@ void BaseAnalyzer::SpanMin(){
 		int bin=(p+1)+(r+1)*10+(e+1)*100 + t*1000;
 		//OLD printf("//%s: Pt=%.0f_%.0f Rho=%.0f_%.0f Eta=%.0f_%.0f\n",varName.c_str(),PtMin,PtMax,RhoMin,RhoMax,EtaMin,EtaMax);
 		//OLD printf("case %d:",bin);
-		printf("%s %.0f %.0f %.0f %.0f %.1f %.1f",varName.c_str(),PtMin,PtMax,RhoMin,RhoMax,EtaMin,EtaMax);
+		printf("%s %.0f %.0f %.0f %.0f %.1f %.1f ",varName.c_str(),PtMin,PtMax,RhoMin,RhoMax,EtaMin,EtaMax);
 		//ComputeMinFast(); //Be Fast!
 		//ComputeDoubleMin(); //Be Slow!
 		ComputeDoubleMinFast(); //Be Fast!
 		}
-	printf("DONE\n");	
+	fprintf(stderr,"DONE\n");	
 	}
 void BaseAnalyzer::ComputeDoubleMin(){
 	fprintf(stderr,"Compute DoubleMin\n");
