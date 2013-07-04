@@ -56,12 +56,14 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 		treeVar["PUReWeight"]		=1   ;if(type!=1)t->SetBranchAddress("PUReWeight",	&treeVar["PUReWeight"]		); //only mc
 		treeVar["eventWeight"]		=1   ;if(type!=1)t->SetBranchAddress("eventWeight",	&treeVar["eventWeight"]		); //only mc
 		
+		treeVarInt["event"]		=-999;t->SetBranchAddress("event",		&treeVarInt["event"]		);
+
 		if(type&4) {lmin=1.0;lmax=0;} //reset lmin-lmax
 		if(type&1) {delete h_data; CreateHisto(1);}
 		if(type&10) {delete h_mc; CreateHisto(2);} //8+2
 		if(type&32) {varAll.clear();} //reset varAll
 		
-		//bool printed=false;
+		//int printed=0;
 
 		for(int i=0;i<t->GetEntries();i++) 
 			{
@@ -82,9 +84,11 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 			
 			treeVar["eventWeight"]=1;
 			treeVar["PUReWeight"]=puw->GetBinContent(puw->FindBin(int(treeVar["rhoPF"])));
+		
 			//---------------------------
 		
 			if(type&1){
+				//if(printed<200){printed++; cout<<"eventNumber"<<treeVarInt["event"]<<endl;}
 				//printf("passed selection - type 1 --> %.3f - %.3f\n",treeVar[varName],treeVar[varName+"Fwd"]);
 				string var=varName;
 				if(EtaMin>2.5)var+="Fwd"; //only in data fwd
@@ -127,13 +131,26 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 }
 
 void Analyzer::LoadBins(){
-		PtBins.push_back(  pair<float,float>(30,50) );
-		PtBins.push_back(  pair<float,float>(50,80) );
-		PtBins.push_back(  pair<float,float>(80,120) );
-		PtBins.push_back(  pair<float,float>(120,250) );
+		ResetBins();
+	//	PtBins.push_back(  pair<float,float>(30,50) );
+	//	PtBins.push_back(  pair<float,float>(50,80) );
+	//	PtBins.push_back(  pair<float,float>(80,120) );
+	//	PtBins.push_back(  pair<float,float>(120,250) );
+	//	RhoBins.push_back(  pair<float,float>(0,15) );
+	//	RhoBins.push_back(  pair<float,float>(15,40) );
+
+		PtBins.push_back(  pair<float,float>(30,40) );
+		PtBins.push_back(  pair<float,float>(40,50) );
+		PtBins.push_back(  pair<float,float>(50,65) );
+		PtBins.push_back(  pair<float,float>(65,85) );
+		PtBins.push_back(  pair<float,float>(85,110) );
+		PtBins.push_back(  pair<float,float>(110,140) );
+		PtBins.push_back(  pair<float,float>(140,180) );
+		PtBins.push_back(  pair<float,float>(180,230) );
+		PtBins.push_back(  pair<float,float>(230,300) );
+		PtBins.push_back(  pair<float,float>(300,4000) );
 		
-		RhoBins.push_back(  pair<float,float>(0,15) );
-		RhoBins.push_back(  pair<float,float>(15,40) );
+		RhoBins.push_back(  pair<float,float>(0,100) );
 		
 		EtaBins.push_back(  pair<float,float>(0,2) );
 		EtaBins.push_back(  pair<float,float>(3,4.7) );
