@@ -16,6 +16,9 @@
 #include "TROOT.h"
 #include "BaseDoubleMin.C"
 
+#define DATATREE "/afs/cern.ch/user/a/amarini/work/V00-09/QGDumper/ZJets2_Data.root"
+#define MCTREE "/afs/cern.ch/user/a/amarini/work/V00-09/QGDumper/ZJets2_mc.root"
+
 using namespace std;
 
 class Analyzer: public BaseAnalyzer{
@@ -41,6 +44,7 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 		treeVar["llPt"]			=-999;t->SetBranchAddress("llPt",		&treeVar["llPt"]			);
 		treeVar["ptJet0"]		=-999;t->SetBranchAddress("ptJet0",		&treeVar["ptJet0"]		);
 		treeVar["rhoPF"]		=-999;t->SetBranchAddress("rhoPF",		&treeVar["rhoPF"]		);
+		treeVar["rhoPFJets"]		=-999;t->SetBranchAddress("rhoPFJets",		&treeVar["rhoPFJets"]		);
 		treeVar["etaJet0"]		=-999;t->SetBranchAddress("etaJet0",		&treeVar["etaJet0"]		);
 		treeVarInt["pdgIdPartJet0"]	=-999;if(type!=1)t->SetBranchAddress("pdgIdPartJet0",	&treeVarInt["pdgIdPartJet0"]); //only mc 
 
@@ -50,7 +54,19 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 	//	treeVar["QGLMLPFwd"]		=-999;if(type==1)t->SetBranchAddress("QGLMLPFwd",	&treeVar["QGLMLPFwd"]		); //only data
 		
 		treeVar["PUReWeight"]		=1   ;if(type!=1)t->SetBranchAddress("PUReWeight",	&treeVar["PUReWeight"]		); //only mc
+		treeVar["PUReWeight_up"]	=1   ;if(type!=1)t->SetBranchAddress("PUReWeight_up",	&treeVar["PUReWeight_up"]		); //only mc
+		treeVar["PUReWeight_dn"]	=1   ;if(type!=1)t->SetBranchAddress("PUReWeight_dn",	&treeVar["PUReWeight_dn"]		); //only mc
 		treeVar["eventWeight"]		=1   ;if(type!=1)t->SetBranchAddress("eventWeight",	&treeVar["eventWeight"]		); //only mc
+		treeVar["PUWeight"]		=1   ;if(type!=1)t->SetBranchAddress("PUWeight",	&treeVar["PUWeight"]		); //only mc
+		
+		treeVar["axis2_L"] = -999; t->SetBranchAddress("axis2_L", &treeVar["axis2_L"]);
+		treeVar["mult_L"] = -999; t->SetBranchAddress("mult_L",   &treeVar["mult_L"]);
+		treeVar["ptD_L"] = -999; t->SetBranchAddress("ptD_L",     &treeVar["ptD_L"]);
+
+		treeVar["axis1_MLP"] = -999; t->SetBranchAddress("axis1_MLP", &treeVar["axis1_MLP"]);
+		treeVar["axis2_MLP"] = -999; t->SetBranchAddress("axis2_MLP", &treeVar["axis2_MLP"]);
+		treeVar["mult_MLP"] = -999; t->SetBranchAddress("mult_MLP",   &treeVar["mult_MLP"]);
+		treeVar["ptD_MLP"] = -999; t->SetBranchAddress("ptD_MLP",     &treeVar["ptD_MLP"]);
 		
 		if(type&4) {lmin=1.0;lmax=0;} //reset lmin-lmax
 		if(type&1) {delete h_data; CreateHisto(1);}
@@ -62,18 +78,6 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 			t->GetEntry(i);
 			//printf("Count -1: %f %f %f\n",treeVar["ptJet0"],treeVar["etaJet0"],treeVar["rhoPF"]);
 			if((treeVar["ptJet0"]<PtMin)||(treeVar["ptJet0"]>PtMax)||(fabs(treeVar["etaJet0"])<EtaMin)||(fabs(treeVar["etaJet0"])>EtaMax)|| (treeVar["rhoPF"]<RhoMin)||(treeVar["rhoPF"]>RhoMax))continue;
-			//printf("Count 0\n");
-			//Z
-			if( (treeVar["llPt"]<50)) continue;
-			//if( (treeVar["mZ"]<70) || (treeVar["mZ"]>110)|| ( fabs(treeVar["deltaPhi_jet"])<3.1415-0.5) ) continue;
-			////printf("Count 1 -- Z\n");
-			//if( (EtaMin<2.5) && (treeVar["betaStarJet0"] > 0.2 * TMath::Log( treeVarInt["nvertex"] - 0.67))  ) continue;
-			////printf("Count 2 -- beta*\n");
-			//if(( (treeVar["axis1_QCJet0"] <=0 ) || (treeVar["axis2_QCJet0"] <=0) ))continue;
-			////printf("Count 3 -- axis\n");
-			//if( treeVarInt["nPFCand_QC_ptCutJet"] <=0 )continue;
-			//if( treeVar["ptD_QCJet0"] <=0 )continue;
-			//printf("Count 4 -- mult\n");
 			//---------------------------
 		
 			if(type&1){
@@ -110,7 +114,7 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 				}
 			if(type&32){ 
 					float weight=treeVar["eventWeight"]*treeVar["PUReWeight"];
-					//varAll.push_back(pair<int,float>(treeVarInt["pdgIdPartJet0"],treeVar[varName]));
+				//	float weight=treeVar["PUWeight"];
 					varAll.push_back(TRIO(treeVarInt["pdgIdPartJet0"],treeVar[varName],weight)); //w=-1 default
 				}
 			}
@@ -134,10 +138,12 @@ int ComputeDoubleMinZJet2(){
 	system("[ -f output.root ] && rm output.root");
 	TChain *mc=new TChain("tree_passedEvents");
 	TChain *data=new TChain("tree_passedEvents");
-		data->Add("/afs/cern.ch/user/a/amarini/work/GluonTag/ZJet2/ZJet_DoubleMu*.root");
-		data->Add("/afs/cern.ch/user/a/amarini/work/GluonTag/ZJet2/ZJet_DoubleE*.root");
+		//data->Add("/afs/cern.ch/user/a/amarini/work/GluonTag/ZJet2/ZJet_DoubleMu*.root");
+		//data->Add("/afs/cern.ch/user/a/amarini/work/GluonTag/ZJet2/ZJet_DoubleE*.root");
+		data->Add(DATATREE);
 
-		mc  ->Add("/afs/cern.ch/user/a/amarini/work/GluonTag/ZJet2/ZJet_DY*.root");
+		//mc  ->Add("/afs/cern.ch/user/a/amarini/work/GluonTag/ZJet2/ZJet_DY*.root");
+		mc->Add(MCTREE);
 	Analyzer A;
 	A.nstep=20;
 	A.varName="QGLHisto";
@@ -168,10 +174,11 @@ Analyzer *Check(float PtMin,float PtMax,float RhoMin,float RhoMax, float EtaMin,
 Analyzer *A=new Analyzer();
 	TChain *mc=new TChain("tree_passedEvents");
 	TChain *data=new TChain("tree_passedEvents");
-		data->Add("/afs/cern.ch/user/a/amarini/work/GluonTag/ZJet2/ZJet_DoubleMu*.root");
-		data->Add("/afs/cern.ch/user/a/amarini/work/GluonTag/ZJet2/ZJet_DoubleE*.root");
-
-		mc  ->Add("/afs/cern.ch/user/a/amarini/work/GluonTag/ZJet2/ZJet_DY*.root");
+		//data->Add("/afs/cern.ch/user/a/amarini/work/GluonTag/ZJet2/ZJet_DoubleMu*.root");
+		//data->Add("/afs/cern.ch/user/a/amarini/work/GluonTag/ZJet2/ZJet_DoubleE*.root");
+		//mc  ->Add("/afs/cern.ch/user/a/amarini/work/GluonTag/ZJet2/ZJet_DY*.root");
+		data->Add(DATATREE);
+		mc->Add(MCTREE);
 A->nstep=20; A->varName=varName;
 A->RhoMin=RhoMin; A->RhoMax=RhoMax;A->PtMin=PtMin;A->PtMax=PtMax; A->EtaMin=EtaMin;A->EtaMax=EtaMax;
 A->CreateHisto();
@@ -215,10 +222,12 @@ Analyzer *CheckDouble(float PtMin,float PtMax,float RhoMin,float RhoMax, float E
 Analyzer *A=new Analyzer();
 	TChain *mc=new TChain("tree_passedEvents");
 	TChain *data=new TChain("tree_passedEvents");
-		data->Add("/afs/cern.ch/user/a/amarini/work/GluonTag/ZJet2/ZJet_DoubleMu*.root");
-		data->Add("/afs/cern.ch/user/a/amarini/work/GluonTag/ZJet2/ZJet_DoubleE*.root");
+		//data->Add("/afs/cern.ch/user/a/amarini/work/GluonTag/ZJet2/ZJet_DoubleMu*.root");
+		//data->Add("/afs/cern.ch/user/a/amarini/work/GluonTag/ZJet2/ZJet_DoubleE*.root");
 
-		mc  ->Add("/afs/cern.ch/user/a/amarini/work/GluonTag/ZJet2/ZJet_DY*.root");
+		//mc  ->Add("/afs/cern.ch/user/a/amarini/work/GluonTag/ZJet2/ZJet_DY*.root");
+		data->Add(DATATREE);
+		mc->Add(MCTREE);
 A->nstep=20; A->varName=varName;
 A->RhoMin=RhoMin; A->RhoMax=RhoMax;A->PtMin=PtMin;A->PtMax=PtMax; A->EtaMin=EtaMin;A->EtaMax=EtaMax;
 A->CreateHisto();
@@ -256,3 +265,26 @@ if(pC!=NULL) (*pC)=c;
 
 return A;
 }
+
+void Validation(float PtMin,float PtMax,float RhoMin,float RhoMax, float EtaMin,float EtaMax, const char * varName="QGLHisto",TCanvas **pC=NULL,int nBins=50,float xMin=0,float xMax=1){
+Analyzer *A=new Analyzer();
+TChain *mc=new TChain("tree_passedEvents");
+TChain *data=new TChain("tree_passedEvents");
+mc->Add(MCTREE);
+data  ->Add(DATATREE);
+A->varName=varName;
+A->RhoMin=RhoMin; A->RhoMax=RhoMax;A->PtMin=PtMin;A->PtMax=PtMax; A->EtaMin=EtaMin;A->EtaMax=EtaMax;
+A->nBins=nBins;A->xMin=xMin;A->xMax=xMax;
+if(xMin<0) A->lmin=xMin;
+if(xMax>1) A->lmax=xMax;
+A->CreateHisto();
+A->SetTrees(mc,data);
+
+A->Loop(data,1);
+A->Loop(mc,32);
+
+TCanvas *c=A->DrawValidation();
+if(pC!=NULL)  (*pC)=c;
+
+}
+

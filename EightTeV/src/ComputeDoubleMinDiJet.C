@@ -181,8 +181,15 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 				
 				treeVar["QGLMLP"]=qgmlp->QGvalue(variables_MLP);
 			}
-			//treeVar["pdgIdPartJet0"];
 			//---------------------------
+			//PUReWeight
+			{
+					int bin=puw->FindBin(treeVar["rho"]);
+					int bin2=ptetaw->FindBin(jetPt[0],fabs(jetEta[0]) );
+					float weight=puw->GetBinContent(bin) *  ptetaw->GetBinContent(bin2);	
+			treeVar["eventWeight"]=1.;
+			treeVar["PUReWeight"]=weight;
+			}
 		
 			//fprintf(stderr,"------G\n");
 			if(type&1){

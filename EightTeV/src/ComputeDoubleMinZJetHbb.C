@@ -51,10 +51,10 @@ double deltaR(double eta1,double phi1, double eta2, double phi2){
 class Analyzer:public BaseAnalyzer{
 public:
 	Analyzer(){
-		TFile *Fpuw=TFile::Open("/afs/cern.ch/work/s/sunil/public/forTom/PU_rewt_flatP6.root");
-		TFile *Fptetaw=TFile::Open("/afs/cern.ch/work/s/sunil/public/forTom/Jetpteta_rewt2D_flatP6.root ");
-		puw=(TH1F*)Fpuw->Get("hist_WT")->Clone("hPU_wt");
-		ptetaw=(TH2F*)Fptetaw->Get("hist_WT")->Clone("hPtEta_wt");
+		TFile *Fpuw=TFile::Open("/afs/cern.ch/work/s/sunil/public/forTom/PUhist.root");
+//		TFile *Fptetaw=TFile::Open("/afs/cern.ch/work/s/sunil/public/forTom/Jetpteta_rewt2D_flatP6.root ");
+		puw=(TH1F*)Fpuw->Get("hist_puWT")->Clone("hPU_wt");
+	//	ptetaw=(TH2F*)Fptetaw->Get("hist_WT")->Clone("hPtEta_wt");
 		qgl=new QGLikelihoodCalculator("/afs/cern.ch/user/a/amarini/work/CMSSW_5_3_6/src/QuarkGluonTagger/EightTeV/data/");//ReducedHisto_2012.root");
 		qgmlp=new QGMLPCalculator("MLP","/afs/cern.ch/user/a/amarini/work/CMSSW_5_3_6/src/QuarkGluonTagger/EightTeV/data/",true); //prob
 		}
@@ -121,9 +121,7 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 			treeVar["etaJet0"]=jetEta[0];
 			treeVar["rhoPF"]=treeVar["rho"];
 			
-			//fprintf(stderr,"A: Pt: %f<%f<%f - Eta: %f<%f<%f: Rho: %f<%f<%f\n",PtMin,treeVar["ptJet0"],PtMax,EtaMin,treeVar["etaJet0"],EtaMax,RhoMin,treeVar["rhoPF"],RhoMax);
 			if((treeVar["ptJet0"]<PtMin)||(treeVar["ptJet0"]>PtMax)||(fabs(treeVar["etaJet0"])<EtaMin)||(fabs(treeVar["etaJet0"])>EtaMax)|| (treeVar["rhoPF"]<RhoMin)||(treeVar["rhoPF"]>RhoMax))continue;
-			//fprintf(stderr,"-B\n");
 			//selection
 			if(Invmass < 70 || Invmass > 110)continue;
 			if( jetBtag[0] >0.244)continue;
@@ -133,17 +131,19 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
     			double mu12_phi = (mu1+mu2).Phi();
 			double muJet_dphi = deltaPhi(jetPhi[0],mu12_phi);
 			if(fabs(muJet_dphi)<3.1415-0.5)continue;
+			if(jetPt[1]/(mu1+mu2).Pt() >0.3) continue;
+				
+			//fprintf(stderr,"--C\n");
 			
 			
 			//trigger --only on data
-			if( type==1 && !( triggerResult != NULL && triggerResult->size()>1 && triggerResult->at(1) )) continue;
+			//if( type==1 && !( triggerResult != NULL && triggerResult->size()>1 && triggerResult->at(1) )) continue;
 			
 			//parton Matching
 			double dR_min=999;
 			int pos_min=999;
 			//int part_min=5;
 			
-			//fprintf(stderr,"_______not NULL: %ld = %ld = %ld\n",partonPt,partonEta,partonPhi);
 			if(type>1){ //only on MC
 			for(int iPart=0;iPart<int(partonPt->size());iPart++)
 				{
@@ -202,28 +202,24 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 			}
 			//treeVar["pdgIdPartJet0"];
 			//---------------------------
+			{
+					int bin=puw->FindBin(treeVar["rho"]);
+					float weight=puw->GetBinContent(bin) ;
+			treeVar["eventWeight"]=1.;
+			treeVar["PUReWeight"]=weight;
+			}
 		
 			//fprintf(stderr,"------G\n");
 			if(type&1){
 				//printf("passed selection - type 1 --> %.3f - %.3f\n",treeVar[varName],treeVar[varName+"Fwd"]);
 				string var=varName;
-			//	if(EtaMin>2.5)var+="Fwd"; //only in data fwd
 				alpha=1; beta=0;
-					//int bin=puw->FindBin(treeVar["rho"]);
-					//int bin2=ptetaw->FindBin(jetPt[0],fabs(jetEta[0]) );
-					//float weight=puw->GetBinContent(bin) *  ptetaw->GetBinContent(bin2);
 					treeVar["eventWeight"]=1.; //data
 					treeVar["PUReWeight"]=1;
 				FillHisto(h_data,var);
 				}	
 			if(type&2){
 				//mc
-			//fprintf(stderr,"________notNull:%ld %ld %f\n",puw,ptetaw,treeVar["rho"]);
-					int bin = puw->FindBin(treeVar["rho"]);
-					int bin2 = ptetaw->FindBin(jetPt[0],fabs(jetEta[0]) );
-					float weight=puw->GetBinContent(bin) *  ptetaw->GetBinContent(bin2);
-			//fprintf(stderr,"________bin:%d,%d, w=%f\n",bin,bin2,weight);
-					treeVar["eventWeight"]=weight;treeVar["PUReWeight"]=1;
 				FillHisto(h_mc,varName);
 				}
 			if(type&4){
@@ -250,8 +246,7 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 				}
 			if(type&32){ 
 					int bin=puw->FindBin(treeVar["rho"]);
-					int bin2=ptetaw->FindBin(jetPt[0],fabs(jetEta[0]) );
-					float weight=puw->GetBinContent(bin) *  ptetaw->GetBinContent(bin2);
+					float weight=puw->GetBinContent(bin) ;
 					varAll.push_back(TRIO(treeVarInt["pdgIdPartJet0"],treeVar[varName],weight)); //w=-1 default
 					//work-around to make it smear all in one shot
 					//varAll.push_back(1,treeVar[varName],weight); //w=-1 default
@@ -409,4 +404,24 @@ A->h_data->DrawNormalized("P SAME");
 if(pC!=NULL) (*pC)=c;
 
 return A;
+}
+
+void Validation(float PtMin,float PtMax,float RhoMin,float RhoMax, float EtaMin,float EtaMax, const char * varName="QGLHisto",TCanvas **pC=NULL){
+Analyzer *A=new Analyzer();
+TChain *mc=new TChain("Hbb/events");
+TChain *data=new TChain("Hbb/events");
+mc->Add(MCTREE);
+data  ->Add(DATATREE);
+A->varName=varName;
+A->RhoMin=RhoMin; A->RhoMax=RhoMax;A->PtMin=PtMin;A->PtMax=PtMax; A->EtaMin=EtaMin;A->EtaMax=EtaMax;
+A->nBins=50;A->xMin=0;A->xMax=1.0;
+A->CreateHisto();
+A->SetTrees(mc,data);
+
+A->Loop(data,1);
+A->Loop(mc,32);
+
+TCanvas *c=A->DrawValidation();
+if(pC!=NULL)  (*pC)=c;
+
 }

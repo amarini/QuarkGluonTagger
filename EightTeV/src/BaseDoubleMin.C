@@ -13,6 +13,7 @@
 #include <cstdlib>
 #include "TROOT.h"
 #include "TCanvas.h"
+#include "THStack.h"
 
 
 using namespace std;
@@ -65,6 +66,7 @@ public:
 	void LoopFast();
 	virtual void LoadBins();
 	void ResetBins();
+	TCanvas *DrawValidation();
 //private:
 	TChain *t_mc;
 	TChain *t_data;
@@ -505,6 +507,80 @@ for(int z=0;z<int(varAll.size());++z){
 	FillHisto(h_mc,varName);
 	}
 
+}
+
+TCanvas *BaseAnalyzer::DrawValidation()
+{
+
+TCanvas *c=new TCanvas(Form("validation"),"",800,1000);
+TPad *up=new TPad("upPad","upPad",0,0.3,1,1);
+TPad *dn=new TPad("dnPad","dnPad",0,0,1,0.3);
+
+up->Draw();
+dn->Draw();
+
+up->cd();
+	TH1F * h_q=new TH1F("h_q","h_q",nBins,xMin,xMax); h_q->Sumw2();
+	TH1F * h_g=new TH1F("h_g","h_g",nBins,xMin,xMax); h_g->Sumw2();
+	TH1F * h_b=new TH1F("h_b","h_b",nBins,xMin,xMax); h_b->Sumw2();
+	TH1F * h_u=new TH1F("h_u","h_u",nBins,xMin,xMax); h_u->Sumw2();
+
+alpha=1.0;
+beta=0.0;
+//Loop(t_mc,32);	
+for(int z=0;z<int(varAll.size());++z){ 
+	switch( abs(varAll[z].pdgId ) )
+		{
+		case 21:
+			h_g->Fill(varAll[z].value,varAll[z].weight);break;
+		case 1: case 2: case 3: case 4:
+			h_q->Fill(varAll[z].value,varAll[z].weight);break;
+		case 5:
+			h_b->Fill(varAll[z].value,varAll[z].weight);break;
+		case 0: default:
+			h_u->Fill(varAll[z].value,varAll[z].weight);break;
+		}
+	}
+//Loop(t_data,1);	
+	//Normalization	
+	{
+	float norm=h_data->Integral();
+	float q=h_q->Integral();
+	float g=h_g->Integral();
+	float b=h_b->Integral();
+	float u=h_u->Integral();
+	float mc=q+g+b+u;
+	
+	h_q->Scale( norm/mc );
+	h_g->Scale( norm/mc );
+	h_b->Scale( norm/mc );
+	h_u->Scale( norm/mc );
+	}
+	//Style
+	h_q->SetLineColor(kBlack); h_q->SetFillColor(kBlue-4);
+	h_g->SetLineColor(kBlack); h_g->SetFillColor(kRed-4);
+	h_b->SetLineColor(kBlack); h_b->SetFillColor(kGreen-4);
+	h_u->SetLineColor(kBlack); h_u->SetFillColor(kGray+1);
+	h_data->SetMarkerStyle(20);h_data->SetMarkerColor(kBlack);h_data->SetLineColor(kBlack);
+
+	THStack *S=new THStack("stack","stack");
+		S->Add(h_u);
+		S->Add(h_b);
+		S->Add(h_g);
+		S->Add(h_q);
+	S->Draw("HIST");
+	S->Draw("AXIS X+ Y+ SAME");
+	//h_data->Draw("AXIS");
+	//h_data->Draw("AXIS X+ Y+ SAME");
+	h_data->Draw("P SAME");
+dn->cd();
+	TH1F* r=(TH1F*)h_data->Clone("ratio");
+	TH1F* mc=(TH1F*)h_q->Clone("mc");
+	mc->Add(h_g);mc->Add(h_b);mc->Add(h_u);
+	r->Divide(mc);
+		delete mc;
+	r->Draw("P");
+return c;
 }
 
 pair<float,float> BaseAnalyzer::SmearDoubleMinFast(float a0_q,float b0_q , float a0_g,float b0_g,int type,int WriteOut){ //type = 0 Q, 1 G
