@@ -67,6 +67,7 @@ public:
 	virtual void LoadBins();
 	void ResetBins();
 	TCanvas *DrawValidation();
+	virtual bool ExtraCuts(){return true;}
 //private:
 	TChain *t_mc;
 	TChain *t_data;

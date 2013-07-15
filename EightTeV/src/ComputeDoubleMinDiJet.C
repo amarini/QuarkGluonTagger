@@ -91,6 +91,7 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 		vector<float> *partonE=0;if(type >1)t->SetBranchAddress("partonE",&partonE);
 		
 		vector<bool> *triggerResult=0;if(type ==1)t->SetBranchAddress("triggerResult",&triggerResult);
+		treeVarInt["runNo"]=-999; t->SetBranchAddress("runNo",&treeVarInt["runNo"]);
 		
 		
 		if(type&4) {lmin=1.0;lmax=0;} //reset lmin-lmax
@@ -108,6 +109,7 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 			//fprintf(stderr,"A: Pt: %f<%f<%f - Eta: %f<%f<%f: Rho: %f<%f<%f\n",PtMin,treeVar["ptJet0"],PtMax,EtaMin,treeVar["etaJet0"],EtaMax,RhoMin,treeVar["rhoPF"],RhoMax);
 			if((treeVar["ptJet0"]<PtMin)||(treeVar["ptJet0"]>PtMax)||(fabs(treeVar["etaJet0"])<EtaMin)||(fabs(treeVar["etaJet0"])>EtaMax)|| (treeVar["rhoPF"]<RhoMin)||(treeVar["rhoPF"]>RhoMax))continue;
 			//fprintf(stderr,"-B\n");
+			treeVar["multOOB"]=float(jetChgPart_QC[0]+jetNeutralPart_ptcut[0]);
 			//selection
 			double muJet_dphi=deltaPhi(jetPhi[0],jetPhi[1]);
 			if(fabs(muJet_dphi)<2.5) continue;
@@ -191,6 +193,7 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 			treeVar["PUReWeight"]=weight;
 			}
 		
+			if( !ExtraCuts() ) continue;
 			//fprintf(stderr,"------G\n");
 			if(type&1){
 				//printf("passed selection - type 1 --> %.3f - %.3f\n",treeVar[varName],treeVar[varName+"Fwd"]);
@@ -249,13 +252,19 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 
 
 void Analyzer::LoadBins(){
-		PtBins.push_back(  pair<float,float>(30,50) );
-		PtBins.push_back(  pair<float,float>(50,80) );
-		PtBins.push_back(  pair<float,float>(80,120) );
-		PtBins.push_back(  pair<float,float>(120,250) );
+		ResetBins();
+		PtBins.push_back(  pair<float,float>(30,40) );
+		PtBins.push_back(  pair<float,float>(40,50) );
+		PtBins.push_back(  pair<float,float>(50,65) );
+		PtBins.push_back(  pair<float,float>(65,85) );
+		PtBins.push_back(  pair<float,float>(85,110) );
+		PtBins.push_back(  pair<float,float>(110,140) );
+		PtBins.push_back(  pair<float,float>(140,180) );
+		PtBins.push_back(  pair<float,float>(180,230) );
+		PtBins.push_back(  pair<float,float>(230,300) );
+		PtBins.push_back(  pair<float,float>(300,4000) );
 		
-		RhoBins.push_back(  pair<float,float>(0,15) );
-		RhoBins.push_back(  pair<float,float>(15,40) );
+		RhoBins.push_back(  pair<float,float>(0,100) );
 		
 		EtaBins.push_back(  pair<float,float>(0,2) );
 		EtaBins.push_back(  pair<float,float>(3,4.7) );
