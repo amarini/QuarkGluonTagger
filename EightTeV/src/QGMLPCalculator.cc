@@ -46,7 +46,7 @@ Float_t QGMLPCalculator::QGvalue(std::map<TString, Float_t> variables){
 
 Float_t QGMLPCalculator::QGvalueInBin(std::map<TString, Float_t> variables, TString region, Int_t ptBin){
   for(std::map<TString, Float_t>::iterator it = mvaVariables_corr.begin(); it != mvaVariables_corr.end(); ++it){
-    mvaVariables_corr[it->first] = variables[it->first] - corrections[region + str(ptBin) + "_" + it->first]*variables["rho"];
+    mvaVariables_corr[it->first] = variables[it->first] - corrections[it->first + "_" + region + str(ptBin)]*variables["rho"];
   }
   if(useProbValue) return reader->GetProba(TString(mva) + region + str(ptBin));
   else             return reader->EvaluateMVA(TString(mva) + region + str(ptBin));
