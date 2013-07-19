@@ -1,5 +1,6 @@
 
 
+
 #include "TFile.h"
 #include "TTree.h"
 #include "TChain.h"
@@ -26,8 +27,8 @@
 #include "/afs/cern.ch/user/a/amarini/work/CMSSW_5_3_6/src/QuarkGluonTagger/EightTeV/src/QGLikelihoodCalculator.cc"
 #include "/afs/cern.ch/user/a/amarini/work/CMSSW_5_3_6/src/QuarkGluonTagger/EightTeV/src/Bins.cc"
 
-#define TREEMC "/afs/cern.ch/work/s/sunil/public/forTom/analysis_flatQCD_P6_Dijets_12Jul.root"
-#define TREEDATA "/afs/cern.ch/work/s/sunil/public/forTom/analysis_data2012ABCD_JetPD_12Jul.root"
+#define TREEMC "/afs/cern.ch/work/s/sunil/public/forTom/analysis_MB_P6_12Jul.root"
+#define TREEDATA "/afs/cern.ch/work/s/sunil/public/forTom/analysis_data2012ABCD_MBPD_12Jul.root"
 
 #include "BaseDoubleMin.C"
 using namespace std;
@@ -125,8 +126,6 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 			//fprintf(stderr,"---D\n");
 			if( jetBtag[0] >0.244)continue;
 			//fprintf(stderr,"----E\n");
-			//trigger --only on data
-			if( type==1 && !( triggerResult != NULL && triggerResult->size()>1 && triggerResult->at(1) )) continue;
 			
 			//parton Matching
 			double dR_min=999;
@@ -195,7 +194,7 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 			{
 					int bin=puw->FindBin(treeVar["rho"]);
 					int bin2=ptetaw->FindBin(jetPt[0],fabs(jetEta[0]) );
-					float weight=puw->GetBinContent(bin) *  ptetaw->GetBinContent(bin2);	
+					float weight=puw->GetBinContent(bin) ;//*  ptetaw->GetBinContent(bin2);	
 			treeVar["eventWeight"]=1.;
 			treeVar["PUReWeight"]=weight;
 			}
@@ -205,7 +204,11 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 			if(type&1){
 				//printf("passed selection - type 1 --> %.3f - %.3f\n",treeVar[varName],treeVar[varName+"Fwd"]);
 				string var=varName;
+			//	if(EtaMin>2.5)var+="Fwd"; //only in data fwd
 				alpha=1; beta=0;
+					//int bin=puw->FindBin(treeVar["rho"]);
+					//int bin2=ptetaw->FindBin(jetPt[0],fabs(jetEta[0]) );
+					//float weight=puw->GetBinContent(bin) *  ptetaw->GetBinContent(bin2);
 					treeVar["eventWeight"]=1.; //data
 					treeVar["PUReWeight"]=1;
 				FillHisto(h_data,var);
@@ -248,16 +251,16 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 
 void Analyzer::LoadBins(){
 		ResetBins();
-	//	PtBins.push_back(  pair<float,float>(30,40) );
-	//	PtBins.push_back(  pair<float,float>(40,50) );
-	//	PtBins.push_back(  pair<float,float>(50,65) );
+		PtBins.push_back(  pair<float,float>(30,40) );
+		PtBins.push_back(  pair<float,float>(40,50) );
+		PtBins.push_back(  pair<float,float>(50,65) );
 		PtBins.push_back(  pair<float,float>(65,85) );
 		PtBins.push_back(  pair<float,float>(85,110) );
 		PtBins.push_back(  pair<float,float>(110,140) );
 		PtBins.push_back(  pair<float,float>(140,180) );
 		PtBins.push_back(  pair<float,float>(180,230) );
 		PtBins.push_back(  pair<float,float>(230,300) );
-	//	PtBins.push_back(  pair<float,float>(300,4000) );
+		PtBins.push_back(  pair<float,float>(300,4000) );
 		
 		RhoBins.push_back(  pair<float,float>(0,100) );
 		

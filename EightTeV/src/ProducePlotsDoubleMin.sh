@@ -2,10 +2,10 @@
 
 #FILE=./SystDoubleMinZJet.txt
 #FILE=./SystDoubleMinZJetFineBins.txt
-FILE=./SystDoubleZJetHbb.txt
 #FILE=./ProducePlot.txt
+FILE=../data/SystZJetHbb_2013_07_15.txt
 
-DIR=~/work/PlotQG/Double3/
+DIR=~/work/PlotQG/Double4_ZJetHbb_2013_07_15/
 mkdir -p ${DIR}
 
 template() # parameters: $1=TYPE=DiJet,ZJet,ZJet2,ZJetHbb
@@ -67,5 +67,5 @@ done
 check_parsing;
 do_zjetHbb;
 do_zjet;
-do_zjet2;
-do_dijet;
+#do_zjet2;
+#do_dijet;

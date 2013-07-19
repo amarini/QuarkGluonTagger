@@ -26,7 +26,7 @@ A->nBins=200;
 A->varName="multOOB";
 A->xMin=0;
 A->xMax=50;
-A->PtMin=80.;A->PtMax=120.; A->EtaMin=3.0;A->EtaMax=4.7;
+A->PtMin=60.;A->PtMax=80.; A->EtaMin=3.0;A->EtaMax=4.7;
 A->CreateHisto();
 A->SetTrees(mc,data);
 A->alpha=1;

@@ -29,9 +29,11 @@
 
 #include "BaseDoubleMin.C"
 
-#define DATATREE "/afs/cern.ch/work/s/sunil/public/forTom/analysis_data2012ABCD_17Jan.root"
-#define MCTREE "/afs/cern.ch/work/s/sunil/public/forTom/analysis_Zjets_17Jan.root"
+//#define DATATREE "/afs/cern.ch/work/s/sunil/public/forTom/analysis_data2012ABCD_17Jan.root"
+//#define MCTREE "/afs/cern.ch/work/s/sunil/public/forTom/analysis_Zjets_17Jan.root"
 
+#define DATATREE "/afs/cern.ch/work/s/sunil/public/forTom/analysis_data2012ABCD_MuPD_12Jul.root"
+#define MCTREE "/afs/cern.ch/work/s/sunil/public/forTom/analysis_Zjets_12Jul.root"
 using namespace std;
 
 double deltaPhi(double phi1,double phi2){
@@ -75,6 +77,7 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 		
 		treeVarInt["nvtx"] = -999; t->SetBranchAddress("nvtx",&treeVarInt["nvtx"]);
 		treeVar["rho"] = -999; t->SetBranchAddress("rho",&treeVar["rho"]);
+		treeVar["rhoIso"] = -999; t->SetBranchAddress("rhoIso",&treeVar["rhoIso"]);
 		Float_t jetPt[4]; t->SetBranchAddress("jetPt",&jetPt);
 		Float_t jetEnergy[4]; t->SetBranchAddress("jetEnergy",&jetEnergy);
 		Float_t jetBtag[4]; t->SetBranchAddress("jetBtag",&jetBtag);
@@ -119,7 +122,8 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 			t->GetEntry(i);
 			treeVar["ptJet0"]=jetPt[0];
 			treeVar["etaJet0"]=jetEta[0];
-			treeVar["rhoPF"]=treeVar["rho"];
+			treeVar["rhoPF"]=treeVar["rhoIso"];
+			treeVar["rhoPFJets"]=treeVar["rho"];
 			
 			if((treeVar["ptJet0"]<PtMin)||(treeVar["ptJet0"]>PtMax)||(fabs(treeVar["etaJet0"])<EtaMin)||(fabs(treeVar["etaJet0"])>EtaMax)|| (treeVar["rhoPF"]<RhoMin)||(treeVar["rhoPF"]>RhoMax))continue;
 			//selection
@@ -137,7 +141,7 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 			
 			
 			//trigger --only on data
-			//if( type==1 && !( triggerResult != NULL && triggerResult->size()>1 && triggerResult->at(1) )) continue;
+			if( type==1 && !( triggerResult != NULL && triggerResult->size()>1 && triggerResult->at(0) )) continue;
 			
 			//parton Matching
 			double dR_min=999;
@@ -172,7 +176,7 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 			treeVar["axis2"]=jetAxis_QC[1][0];
 			treeVar["ptD"]=jetPtD_QC[0];
 			//Discriminators - only if needed -  save time
-			if(varName=="QGLHisto")treeVar["QGLHisto"] = qgl->computeQGLikelihood2012(jetPt[0],jetEta[0],treeVar["rho"],jetChgPart_QC[0]+jetNeutralPart_ptcut[0]-sub_data,jetPtD_QC[0],jetAxis_QC[1][0]);
+			if(varName=="QGLHisto")treeVar["QGLHisto"] = qgl->computeQGLikelihood2012(jetPt[0],jetEta[0],treeVar["rhoPF"],jetChgPart_QC[0]+jetNeutralPart_ptcut[0]-sub_data,jetPtD_QC[0],jetAxis_QC[1][0]);
 			if(varName=="QGLMLP"){	
 				variables_MLP["axis1"]=jetAxis_QC[0][0];
 				variables_MLP["axis2"]=jetAxis_QC[1][0];
