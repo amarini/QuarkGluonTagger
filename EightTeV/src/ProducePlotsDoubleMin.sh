@@ -4,8 +4,13 @@
 #FILE=./SystDoubleMinZJetFineBins.txt
 #FILE=./ProducePlot.txt
 FILE=../data/SystZJetHbb_2013_07_15.txt
+FILE=../data/SystZJetHbb_2013_07_23_ExtendedRange.txt
+FILE=../data/SystMB_2013_07_24.txt
+FILE=../data/SystMB_2013_07_25_DiJetMC.txt
 
 DIR=~/work/PlotQG/Double4_ZJetHbb_2013_07_15/
+DIR=~/work/PlotQG/Double5_ZJetHbb_2013_07_23_ExtendedRange
+DIR=~/work/PlotQG/Double6_MB_2013_07_25/
 mkdir -p ${DIR}
 
 template() # parameters: $1=TYPE=DiJet,ZJet,ZJet2,ZJetHbb
@@ -37,6 +42,11 @@ do_dijet()
 template DiJet ;
 }
 
+do_MB()
+{
+template MB ;
+}
+
 do_zjet()
 {
 template ZJet ;
@@ -66,6 +76,7 @@ done
 
 check_parsing;
 do_zjetHbb;
-do_zjet;
+do_MB;
+#do_zjet;
 #do_zjet2;
 #do_dijet;

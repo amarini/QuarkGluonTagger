@@ -113,7 +113,7 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 		
 		
 		if(type&4) {lmin=1.0;lmax=0;} //reset lmin-lmax
-		if(type&1) {delete h_data; CreateHisto(1);}
+		if(type&1) {delete h_data; CreateHisto(1);varAllData.clear();}
 		if(type&10) {delete h_mc; CreateHisto(2);} //8+2
 		if(type&32) {varAll.clear();} //reset varAll
 
@@ -221,6 +221,7 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 					treeVar["eventWeight"]=1.; //data
 					treeVar["PUReWeight"]=1;
 				FillHisto(h_data,var);
+				varAllData.push_back(treeVar[var]);
 				}	
 			if(type&2){
 				//mc
@@ -261,6 +262,7 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 
 void Analyzer::LoadBins(){
 		ResetBins();
+		PtBins.push_back(  pair<float,float>(20,30) );
 		PtBins.push_back(  pair<float,float>(30,40) );
 		PtBins.push_back(  pair<float,float>(40,50) );
 		PtBins.push_back(  pair<float,float>(50,65) );
@@ -296,19 +298,11 @@ int ComputeDoubleMinZJetHbb(){
 		data  ->Add(DATATREE);
 	Analyzer A;
 	A.nstep=20;
+	A.stp0=.01;A.stp1=0.01;
 	A.varName="QGLHisto";
-//	A.varName="QGLMLP";
 	A.CreateHisto();
 	A.SetTrees(mc,data);
 		freopen("/dev/null","w",stderr);
-	//A.ComputeMinFast(); //A.ComputeDoubleMin;
-	//A.ComputeDoubleMin();
-		/*
-		A.alpha=1;
-		A.beta=0;
-		A.Loop(mc,2)
-		A.Loop(data,1)
-		*/
 	fprintf(stderr,"Going to do Span\n");
 	A.SpanMin();
 	A.varName="QGLMLP";

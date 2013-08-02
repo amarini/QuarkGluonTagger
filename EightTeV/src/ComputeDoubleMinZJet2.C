@@ -69,7 +69,7 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 		treeVar["ptD_MLP"] = -999; t->SetBranchAddress("ptD_MLP",     &treeVar["ptD_MLP"]);
 		
 		if(type&4) {lmin=1.0;lmax=0;} //reset lmin-lmax
-		if(type&1) {delete h_data; CreateHisto(1);}
+		if(type&1) {delete h_data; CreateHisto(1);varAllData.clear();}
 		if(type&10) {delete h_mc; CreateHisto(2);} //8+2
 		if(type&32) {varAll.clear();} //reset varAll
 
@@ -86,6 +86,7 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 				if(EtaMin>2.5)var+="Fwd"; //only in data fwd
 				alpha=1; beta=0;
 				FillHisto(h_data,var);
+				varAllData.push_back(treeVar[var]);
 				}	
 			if(type&2){
 				//mc

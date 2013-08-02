@@ -27,7 +27,8 @@
 #include "/afs/cern.ch/user/a/amarini/work/CMSSW_5_3_6/src/QuarkGluonTagger/EightTeV/src/QGLikelihoodCalculator.cc"
 #include "/afs/cern.ch/user/a/amarini/work/CMSSW_5_3_6/src/QuarkGluonTagger/EightTeV/src/Bins.cc"
 
-#define TREEMC "/afs/cern.ch/work/s/sunil/public/forTom/analysis_MB_P6_12Jul.root"
+//#define TREEMC "/afs/cern.ch/work/s/sunil/public/forTom/analysis_MB_P6_12Jul.root"
+#define TREEMC "/afs/cern.ch/work/s/sunil/public/forTom/analysis_flatQCD_P6_Dijets_12Jul.root"
 #define TREEDATA "/afs/cern.ch/work/s/sunil/public/forTom/analysis_data2012ABCD_MBPD_12Jul.root"
 
 #include "BaseDoubleMin.C"
@@ -251,16 +252,18 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 
 void Analyzer::LoadBins(){
 		ResetBins();
-		PtBins.push_back(  pair<float,float>(30,40) );
-		PtBins.push_back(  pair<float,float>(40,50) );
-		PtBins.push_back(  pair<float,float>(50,65) );
-		PtBins.push_back(  pair<float,float>(65,85) );
-		PtBins.push_back(  pair<float,float>(85,110) );
-		PtBins.push_back(  pair<float,float>(110,140) );
-		PtBins.push_back(  pair<float,float>(140,180) );
-		PtBins.push_back(  pair<float,float>(180,230) );
-		PtBins.push_back(  pair<float,float>(230,300) );
-		PtBins.push_back(  pair<float,float>(300,4000) );
+		PtBins.push_back(  pair<float,float>(20,30) );
+		fprintf(stderr,"--------------ONE BIN----------\n");
+//		PtBins.push_back(  pair<float,float>(30,40) );
+//		PtBins.push_back(  pair<float,float>(40,50) );
+//		PtBins.push_back(  pair<float,float>(50,65) );
+//		PtBins.push_back(  pair<float,float>(65,85) );
+//		PtBins.push_back(  pair<float,float>(85,110) );
+//		PtBins.push_back(  pair<float,float>(110,140) );
+//		PtBins.push_back(  pair<float,float>(140,180) );
+//		PtBins.push_back(  pair<float,float>(180,230) );
+//		PtBins.push_back(  pair<float,float>(230,300) );
+//		PtBins.push_back(  pair<float,float>(300,4000) );
 		
 		RhoBins.push_back(  pair<float,float>(0,100) );
 		
@@ -277,7 +280,7 @@ void Analyzer::LoadBins(){
 
 
 
-int ComputeDoubleMinDiJet(){
+int ComputeDoubleMinMB(){
 	system("[ -f output.root ] && rm output.root");
 	TChain *mc=new TChain("Hbb/events");
 	TChain *data=new TChain("Hbb/events");

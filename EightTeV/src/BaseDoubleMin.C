@@ -18,6 +18,8 @@
 
 using namespace std;
 
+double sqr(double a) {return a*a;}
+
 class TRIO {
 public:
 	TRIO(){};
@@ -40,13 +42,16 @@ public:
 		lmin=0;lmax=1.0;
 		opt="CHI2 WW";
 		aMin=0.5;aMax=1.3;bMin=0.5;bMax=1.5;
+		iteration=0;
 		}
 	string varName;//QGL HISTO
+	int iteration; //internal counter
 	int nstep;
 	float stp0;
 	float stp1;
 
 	float Chi2(TH1F*h1,TH1F*h2);	
+	float LogL(float bw=1.0/30.);
 	int ResetFast();	
 	float function(float x0, float a ,float b,float min=0,float max=1);
 	void ComputeMin();
@@ -109,6 +114,7 @@ public:
 //----- vector with all the likelihood /MLP results - for a given selection /pdgId/value
 	//vector<pair<int,float> > varAll;
 	vector<TRIO> varAll;
+	vector<float> varAllData;
 };
 
 
@@ -132,6 +138,29 @@ float BaseAnalyzer::Chi2(TH1F*h1,TH1F*h2)
 		if(h2->GetBinContent(i)==0)h2->SetBinError(i,1);
 		}
 	return h1->Chi2Test(h2,opt.c_str());
+}
+float BaseAnalyzer::LogL(float bw)
+{
+	double L=1;
+	for(int i=0;i<int(varAllData.size());++i)
+	{
+	double densityEstimator=0;
+	double Nj= varAll.size();
+	for(int j=0;j<int(varAll.size());++j)
+		{
+		//weights, smearing
+		float a=1,b=0;
+		if(abs(varAll[j].pdgId)<5 && varAll[j].pdgId!=0) {a=a_q;b=b_q;}
+		else // also the unmatched
+			{a=a_g;b=b_g;}
+		float value=function(varAll[j].value,a,b,lmin,lmax);
+		densityEstimator+=varAll[j].weight *  TMath::Exp(- sqr(value-varAllData[i])/sqr(bw) );
+		}
+	L*=densityEstimator;
+	}
+	L=-TMath::Log(L); //- sign so -> minimize as chi2
+	return float(L);
+	
 }
 
 void BaseAnalyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 data type |=2 mc
@@ -260,6 +289,11 @@ void BaseAnalyzer::SpanMin(){
 	for ( int p=0; p< int(PtBins.size()) ;p++)
 	for ( int r=0; r< int(RhoBins.size());r++)
 		{
+			//save temporary values
+			float stp0_=stp0;
+			float stp1_=stp1;
+			int nstep_=nstep;
+			if(e>0) {nstep*=2; fprintf(stderr,"Double*Double stps at high eta\n");};
 		fprintf(stderr,"Bins: %d %d %d\n",e,p,r);
 		PtMin=PtBins[p].first;PtMax=PtBins[p].second;
 		EtaMin=EtaBins[e].first;EtaMax=EtaBins[e].second;
@@ -276,6 +310,10 @@ void BaseAnalyzer::SpanMin(){
 		//ComputeMinFast(); //Be Fast!
 		//ComputeDoubleMin(); //Be Slow!
 		ComputeDoubleMinFast(); //Be Fast!
+			//restore
+			stp0=stp0_;
+			stp1=stp1_;
+			nstep=nstep_;
 		}
 	fprintf(stderr,"DONE\n");	
 	}
@@ -476,6 +514,7 @@ void BaseAnalyzer::ComputeMinFast(){
 void BaseAnalyzer::ComputeDoubleMinFast(){
 	//nstep=5; //otherwise too slow?
 	alpha=1.0;beta=0;
+	iteration=0;
 	Loop(t_data,1);
 	if(varName=="QGLMLP")
 		Loop(t_mc,4);
@@ -496,8 +535,8 @@ void BaseAnalyzer::LoopFast()
 delete  h_mc;
 CreateHisto(2); 
 for(int z=0;z<int(varAll.size());++z){ 
-	{alpha=1;beta=0;}
-	if(varAll[z].pdgId == 21){alpha=a_g; beta=b_g; } 
+	{alpha=1;beta=0;}	
+	if(varAll[z].pdgId == 21){alpha=a_g; beta=b_g;} 
 	if(fabs(varAll[z].pdgId) <5 ) {alpha=a_q;beta = b_q;}
 //	if( fabs(treeVarInt["pdgIdPartJet0"])== 0) {alpha=1;beta=0;}
 	if(fabs(varAll[z].pdgId) == 0) {alpha=a_g;beta=b_g;}
@@ -603,6 +642,8 @@ pair<float,float> BaseAnalyzer::SmearDoubleMinFast(float a0_q,float b0_q , float
 
 		if(type==0)g2_q->SetPoint(g2_q->GetN(),a_q,b_q, Chi2(h_data,h_mc)  );	
 		if(type==1)g2_g->SetPoint(g2_g->GetN(),a_g,b_g, Chi2(h_data,h_mc)  );	
+		//if(type==0)g2_q->SetPoint(g2_q->GetN(),a_q,b_q, LogL(1./nBins)  );	
+		//if(type==1)g2_g->SetPoint(g2_g->GetN(),a_g,b_g, LogL(1./nBins)  );	
 		}
 	alpha=1.0;beta=0;
 	a_q=a0_q;b_q=b0_q;
@@ -617,6 +658,8 @@ pair<float,float> BaseAnalyzer::SmearDoubleMinFast(float a0_q,float b0_q , float
 		h_mc->Scale(h_data->Integral()/h_mc->Integral());
 		if(type==0)g2_q->SetPoint(g2_q->GetN(),a_q,b_q, Chi2(h_data,h_mc)  );	
 		if(type==1)g2_g->SetPoint(g2_g->GetN(),a_g,b_g, Chi2(h_data,h_mc)  );	
+		//if(type==0)g2_q->SetPoint(g2_q->GetN(),a_q,b_q, LogL(1./nBins)  );	
+		//if(type==1)g2_g->SetPoint(g2_g->GetN(),a_g,b_g, LogL(1./nBins)  );	
 		}
 	
 	//Find min0;min1
@@ -637,12 +680,13 @@ pair<float,float> BaseAnalyzer::SmearDoubleMinFast(float a0_q,float b0_q , float
 		h_mc->Scale(h_data->Integral()/h_mc->Integral());
 		if(type==0){g2_q->SetPoint(g2_q->GetN(),a_q,b_q, Chi2(h_data,h_mc)  ); }
 		if(type==1){g2_g->SetPoint(g2_g->GetN(),a_g,b_g, Chi2(h_data,h_mc)  );	}
+		//if(type==0){g2_q->SetPoint(g2_q->GetN(),a_q,b_q, LogL(1./nBins)  ); }
+		//if(type==1){g2_g->SetPoint(g2_g->GetN(),a_g,b_g, LogL(1./nBins)  );	}
 		}
 	
 		if(type==0)R=MinG(g2_q);
 		if(type==1)R=MinG(g2_g);
-	//SAME ON G,& REDO
-	//printf("a=%.3f;b=%.3f;lmin=%.3f;lmax=%.3f;break;\n",R.first,R.second,lmin,lmax);
+	
 	
 	if(WriteOut){	
 	string name=Form("Results/output_%s_pt%.0f_%.0f_rho%.0f_%.0f_eta%.0f_%.0f",varName.c_str(),PtMin,PtMax,RhoMin,RhoMax,EtaMin,EtaMax);
@@ -650,6 +694,7 @@ pair<float,float> BaseAnalyzer::SmearDoubleMinFast(float a0_q,float b0_q , float
 	if(type==1)g2_g->SaveAs((name+"g2_g.root").c_str());
 	}
 	
+	iteration++;	
 	return R;
 }
 //----------------------------------------------------------------------------------------------------

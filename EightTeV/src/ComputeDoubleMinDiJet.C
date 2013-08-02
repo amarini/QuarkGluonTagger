@@ -101,7 +101,7 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 		
 		
 		if(type&4) {lmin=1.0;lmax=0;} //reset lmin-lmax
-		if(type&1) {delete h_data; CreateHisto(1);}
+		if(type&1) {delete h_data; CreateHisto(1);varAllData.clear();}
 		if(type&10) {delete h_mc; CreateHisto(2);} //8+2
 		if(type&32) {varAll.clear();} //reset varAll
 
@@ -209,6 +209,7 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 					treeVar["eventWeight"]=1.; //data
 					treeVar["PUReWeight"]=1;
 				FillHisto(h_data,var);
+				varAllData.push_back(treeVar[var]);
 				}	
 			if(type&2){
 				//mc
@@ -248,16 +249,16 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 
 void Analyzer::LoadBins(){
 		ResetBins();
-	//	PtBins.push_back(  pair<float,float>(30,40) );
-	//	PtBins.push_back(  pair<float,float>(40,50) );
-	//	PtBins.push_back(  pair<float,float>(50,65) );
-		PtBins.push_back(  pair<float,float>(65,85) );
-		PtBins.push_back(  pair<float,float>(85,110) );
-		PtBins.push_back(  pair<float,float>(110,140) );
-		PtBins.push_back(  pair<float,float>(140,180) );
-		PtBins.push_back(  pair<float,float>(180,230) );
-		PtBins.push_back(  pair<float,float>(230,300) );
-	//	PtBins.push_back(  pair<float,float>(300,4000) );
+		PtBins.push_back(  pair<float,float>(30,40) );
+		PtBins.push_back(  pair<float,float>(40,50) );
+		PtBins.push_back(  pair<float,float>(50,65) );
+	//	PtBins.push_back(  pair<float,float>(65,85) );
+	//	PtBins.push_back(  pair<float,float>(85,110) );
+	//	PtBins.push_back(  pair<float,float>(110,140) );
+	//	PtBins.push_back(  pair<float,float>(140,180) );
+	//	PtBins.push_back(  pair<float,float>(180,230) );
+	//	PtBins.push_back(  pair<float,float>(230,300) );
+		PtBins.push_back(  pair<float,float>(300,4000) );
 		
 		RhoBins.push_back(  pair<float,float>(0,100) );
 		
