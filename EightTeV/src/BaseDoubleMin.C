@@ -19,6 +19,12 @@
 using namespace std;
 
 double sqr(double a) {return a*a;}
+#define EPSILON 0.001
+bool CompareFloats (float A, float B) 
+{
+   float diff = A - B;
+   return (diff < EPSILON) && (-diff < EPSILON);
+}
 
 class TRIO {
 public:
@@ -43,12 +49,16 @@ public:
 		opt="CHI2 WW";
 		aMin=0.5;aMax=1.3;bMin=0.5;bMax=1.5;
 		iteration=0;
+		readStartPoints=0;
+		filenameStartPoints="";
 		}
 	string varName;//QGL HISTO
 	int iteration; //internal counter
 	int nstep;
 	float stp0;
 	float stp1;
+	int readStartPoints;
+	string filenameStartPoints;
 
 	float Chi2(TH1F*h1,TH1F*h2);	
 	float LogL(float bw=1.0/30.);
@@ -521,8 +531,35 @@ void BaseAnalyzer::ComputeDoubleMinFast(){
 	Loop(t_mc,32);
 
 	pair<float,float> R_q,R_g;
+	if(!readStartPoints){
 	R_g=SmearDoubleMinFast(1,0,1,0,1); //
 	R_q=SmearDoubleMinFast(1,0,R_g.first,R_g.second,0); //
+	}else{
+	//read the points
+	FILE *fr=fopen(filenameStartPoints.c_str(),"r");
+	char _var_[1023];
+	float _ptmin_,_ptmax_,_rhomin_,_rhomax_,_etamin_,_etamax_,_aq_,_bq_,_ag_,_bg_,_lmin_,_lmax_;
+	float _aq_mean_=0,_bq_mean_=0,_ag_mean_=0,_bg_mean_=0;int _n_=0;
+	while (fscanf(fr,"%s %f %f %f %f %f %f %f %f %f %f %f %f",_var_,&_ptmin_,&_ptmax_,&_rhomin_,&_rhomax_,&_etamin_,&_etamax_,&_aq_,&_bq_,&_ag_,&_bg_,&_lmin_,&_lmax_) != EOF) {
+	if(varName==string(_var_) && (CompareFloats(_etamin_,EtaMin)) && ( CompareFloats(_etamax_,EtaMax)))
+		{
+		//cross comparing of the limit values. Adiacent bins
+		if( CompareFloats(_ptmin_,PtMax) || CompareFloats(_ptmax_,PtMin) )	
+			{
+			_aq_mean_+=_aq_;
+			_ag_mean_+=_ag_;
+			_bq_mean_+=_bq_;
+			_bg_mean_+=_bg_;
+			_n_++; //can be 1 or 2
+			}
+		}
+	}
+	fclose(fr);
+	R_q=pair<float,float>(_aq_mean_/_n_,_bq_mean_/_n_);
+	R_g=pair<float,float>(_ag_mean_/_n_,_bg_mean_/_n_);
+	R_g=SmearDoubleMinFast(R_q.first,R_q.second,R_g.first,R_g.second,1); //
+	R_q=SmearDoubleMinFast(R_q.first,R_g.second,R_g.first,R_g.second,0); //
+	}
 	R_g=SmearDoubleMinFast(R_q.first,R_q.second,R_g.first,R_g.second,1); //
 	R_q=SmearDoubleMinFast(R_q.first,R_q.second,R_g.first,R_g.second,0,1); //
 

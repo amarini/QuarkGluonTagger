@@ -253,17 +253,16 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 void Analyzer::LoadBins(){
 		ResetBins();
 		PtBins.push_back(  pair<float,float>(20,30) );
-		fprintf(stderr,"--------------ONE BIN----------\n");
-//		PtBins.push_back(  pair<float,float>(30,40) );
-//		PtBins.push_back(  pair<float,float>(40,50) );
-//		PtBins.push_back(  pair<float,float>(50,65) );
-//		PtBins.push_back(  pair<float,float>(65,85) );
-//		PtBins.push_back(  pair<float,float>(85,110) );
-//		PtBins.push_back(  pair<float,float>(110,140) );
-//		PtBins.push_back(  pair<float,float>(140,180) );
-//		PtBins.push_back(  pair<float,float>(180,230) );
-//		PtBins.push_back(  pair<float,float>(230,300) );
-//		PtBins.push_back(  pair<float,float>(300,4000) );
+		PtBins.push_back(  pair<float,float>(30,40) );
+		PtBins.push_back(  pair<float,float>(40,50) );
+		PtBins.push_back(  pair<float,float>(50,65) );
+		PtBins.push_back(  pair<float,float>(65,85) );
+		PtBins.push_back(  pair<float,float>(85,110) );
+		PtBins.push_back(  pair<float,float>(110,140) );
+		PtBins.push_back(  pair<float,float>(140,180) );
+		PtBins.push_back(  pair<float,float>(180,230) );
+		PtBins.push_back(  pair<float,float>(230,300) );
+		PtBins.push_back(  pair<float,float>(300,4000) );
 		
 		RhoBins.push_back(  pair<float,float>(0,100) );
 		
@@ -293,6 +292,9 @@ int ComputeDoubleMinMB(){
 //	A.varName="QGLMLP";
 	A.CreateHisto();
 	A.SetTrees(mc,data);
+	fprintf(stderr,"Start Points from MB\n");
+	A.readStartPoints=1.0;
+	A.filenameStartPoints="../data/SystMB_2013_07_25_DiJetMC.txt" ;
 		freopen("/dev/null","w",stderr);
 	//A.ComputeMinFast(); //A.ComputeDoubleMin;
 	//A.ComputeDoubleMin();

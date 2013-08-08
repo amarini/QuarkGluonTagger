@@ -302,11 +302,16 @@ int ComputeDoubleMinZJetHbb(){
 	A.varName="QGLHisto";
 	A.CreateHisto();
 	A.SetTrees(mc,data);
+	A.readStartPoints=1.0;
+	fprintf(stderr,"Start Points from DiJet\n");
+	//A.filenameStartPoints="../data/SystZJetHbb_2013_07_23.txt" ;
+	A.readStartPoints=1.0;
+	A.filenameStartPoints="../data/SystMB_2013_07_25_DiJetMC.txt";
 		freopen("/dev/null","w",stderr);
 	fprintf(stderr,"Going to do Span\n");
 	A.SpanMin();
 	A.varName="QGLMLP";
-	A.SpanMin();
+	//A.SpanMin();
 	return 0;
 	}
 

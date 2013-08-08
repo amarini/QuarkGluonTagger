@@ -252,12 +252,12 @@ void Analyzer::LoadBins(){
 		PtBins.push_back(  pair<float,float>(30,40) );
 		PtBins.push_back(  pair<float,float>(40,50) );
 		PtBins.push_back(  pair<float,float>(50,65) );
-	//	PtBins.push_back(  pair<float,float>(65,85) );
-	//	PtBins.push_back(  pair<float,float>(85,110) );
-	//	PtBins.push_back(  pair<float,float>(110,140) );
-	//	PtBins.push_back(  pair<float,float>(140,180) );
-	//	PtBins.push_back(  pair<float,float>(180,230) );
-	//	PtBins.push_back(  pair<float,float>(230,300) );
+		PtBins.push_back(  pair<float,float>(65,85) );
+		PtBins.push_back(  pair<float,float>(85,110) );
+		PtBins.push_back(  pair<float,float>(110,140) );
+		PtBins.push_back(  pair<float,float>(140,180) );
+		PtBins.push_back(  pair<float,float>(180,230) );
+		PtBins.push_back(  pair<float,float>(230,300) );
 		PtBins.push_back(  pair<float,float>(300,4000) );
 		
 		RhoBins.push_back(  pair<float,float>(0,100) );
@@ -288,6 +288,9 @@ int ComputeDoubleMinDiJet(){
 //	A.varName="QGLMLP";
 	A.CreateHisto();
 	A.SetTrees(mc,data);
+	fprintf(stderr,"Start Points from ZJet\n");
+	A.readStartPoints=1.0;
+	A.filenameStartPoints="../data/SystZJetHbb_2013_07_23.txt" ;
 		freopen("/dev/null","w",stderr);
 	//A.ComputeMinFast(); //A.ComputeDoubleMin;
 	//A.ComputeDoubleMin();
