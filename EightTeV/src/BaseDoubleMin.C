@@ -532,9 +532,11 @@ void BaseAnalyzer::ComputeDoubleMinFast(){
 
 	pair<float,float> R_q,R_g;
 	if(!readStartPoints){
+	fprintf(stderr,"Not Read Start points\n");
 	R_g=SmearDoubleMinFast(1,0,1,0,1); //
 	R_q=SmearDoubleMinFast(1,0,R_g.first,R_g.second,0); //
 	}else{
+	fprintf(stderr,"Read Start points\n");
 	//read the points
 	FILE *fr=fopen(filenameStartPoints.c_str(),"r");
 	char _var_[1023];
@@ -560,10 +562,12 @@ void BaseAnalyzer::ComputeDoubleMinFast(){
 	R_g=SmearDoubleMinFast(R_q.first,R_q.second,R_g.first,R_g.second,1); //
 	R_q=SmearDoubleMinFast(R_q.first,R_g.second,R_g.first,R_g.second,0); //
 	}
+	fprintf(stderr,"Common swap\n");
 	R_g=SmearDoubleMinFast(R_q.first,R_q.second,R_g.first,R_g.second,1); //
 	R_q=SmearDoubleMinFast(R_q.first,R_q.second,R_g.first,R_g.second,0,1); //
 
 	printf("%.3f %.3f %.3f %.3f %.3f %.3f \n",R_q.first,R_q.second,R_g.first,R_g.second,lmin,lmax);
+	fprintf(stderr,"PRINTED\n");
 	}
 
 void BaseAnalyzer::LoopFast()
@@ -571,7 +575,9 @@ void BaseAnalyzer::LoopFast()
 //delete and recreate h_mc (empty)
 delete  h_mc;
 CreateHisto(2); 
+fprintf(stderr,"LoopFast\n");
 for(int z=0;z<int(varAll.size());++z){ 
+	
 	{alpha=1;beta=0;}	
 	if(varAll[z].pdgId == 21){alpha=a_g; beta=b_g;} 
 	if(fabs(varAll[z].pdgId) <5 ) {alpha=a_q;beta = b_q;}
@@ -669,6 +675,7 @@ pair<float,float> BaseAnalyzer::SmearDoubleMinFast(float a0_q,float b0_q , float
 	a_g=a0_g;b_g=b0_g;
 
 	alpha=1.0;beta=0;
+	fprintf(stderr,"ai\n");
 	for(float ai=0.7; ai<=1.1; ai+=0.02)
 		{
 		Reset(h_mc);	
@@ -686,6 +693,7 @@ pair<float,float> BaseAnalyzer::SmearDoubleMinFast(float a0_q,float b0_q , float
 	a_q=a0_q;b_q=b0_q;
 	a_g=a0_g;b_g=b0_g;
 
+	fprintf(stderr,"bi\n");
 	for(float bi=-0.5; bi<=0.5; bi+=0.01)
 		{
 		Reset(h_mc);	
@@ -706,6 +714,7 @@ pair<float,float> BaseAnalyzer::SmearDoubleMinFast(float a0_q,float b0_q , float
 		if(type==1)R=MinG(g2_g);
 	min0=R.first;min1=R.second;
 
+	fprintf(stderr,"double loop\n");
 	for(int i=-nstep;i<=nstep;i++)
 	for(int j=-nstep;j<=nstep;j++)
         	{

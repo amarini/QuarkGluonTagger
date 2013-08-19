@@ -263,6 +263,8 @@ void Analyzer::LoadBins(){
 		RhoBins.push_back(  pair<float,float>(0,100) );
 		
 		EtaBins.push_back(  pair<float,float>(0,2) );
+		EtaBins.push_back(  pair<float,float>(2.0,2.5) );
+		EtaBins.push_back(  pair<float,float>(2.5,3.0) );
 		EtaBins.push_back(  pair<float,float>(3,4.7) );
 	}
 
@@ -288,9 +290,9 @@ int ComputeDoubleMinDiJet(){
 //	A.varName="QGLMLP";
 	A.CreateHisto();
 	A.SetTrees(mc,data);
-	fprintf(stderr,"Start Points from ZJet\n");
-	A.readStartPoints=1.0;
-	A.filenameStartPoints="../data/SystZJetHbb_2013_07_23.txt" ;
+	//fprintf(stderr,"Start Points from ZJet\n");
+	A.readStartPoints=0;
+	//A.filenameStartPoints="../data/SystZJetHbb_2013_07_23.txt" ;
 		freopen("/dev/null","w",stderr);
 	//A.ComputeMinFast(); //A.ComputeDoubleMin;
 	//A.ComputeDoubleMin();
@@ -303,7 +305,7 @@ int ComputeDoubleMinDiJet(){
 	fprintf(stderr,"Going to do Span\n");
 	A.SpanMin();
 	A.varName="QGLMLP";
-	A.SpanMin();
+	//A.SpanMin();
 	return 0;
 	}
 

@@ -277,6 +277,8 @@ void Analyzer::LoadBins(){
 		RhoBins.push_back(  pair<float,float>(0,100) );
 		
 		EtaBins.push_back(  pair<float,float>(0,2) );
+		EtaBins.push_back(  pair<float,float>(2,2.5) );
+		EtaBins.push_back(  pair<float,float>(2.5,3.0) );
 		EtaBins.push_back(  pair<float,float>(3,4.7) );
 	}
 
@@ -305,8 +307,8 @@ int ComputeDoubleMinZJetHbb(){
 	A.readStartPoints=1.0;
 	fprintf(stderr,"Start Points from DiJet\n");
 	//A.filenameStartPoints="../data/SystZJetHbb_2013_07_23.txt" ;
-	A.readStartPoints=1.0;
-	A.filenameStartPoints="../data/SystMB_2013_07_25_DiJetMC.txt";
+	A.readStartPoints=0;
+	//A.filenameStartPoints="../data/SystMB_2013_07_25_DiJetMC.txt";
 		freopen("/dev/null","w",stderr);
 	fprintf(stderr,"Going to do Span\n");
 	A.SpanMin();
