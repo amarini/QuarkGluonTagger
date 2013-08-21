@@ -51,6 +51,7 @@ public:
 		iteration=0;
 		readStartPoints=0;
 		filenameStartPoints="";
+		compress=0;
 		}
 	string varName;//QGL HISTO
 	int iteration; //internal counter
@@ -59,6 +60,7 @@ public:
 	float stp1;
 	int readStartPoints;
 	string filenameStartPoints;
+	int compress;
 
 	float Chi2(TH1F*h1,TH1F*h2);	
 	float LogL(float bw=1.0/30.);
@@ -125,7 +127,47 @@ public:
 	//vector<pair<int,float> > varAll;
 	vector<TRIO> varAll;
 	vector<float> varAllData;
+	void CompressVector(int N=1000);
 };
+
+
+void BaseAnalyzer::CompressVector(int N){
+vector<TRIO> *varNew=new vector<TRIO>;
+float max=varAll[0].value;
+float min=varAll[0].value;
+//need to check pdgid too
+for(int z=0;z<varAll.size();z++)
+	{	
+	if(varAll[z].value>max)max=varAll[z].value;
+	if(varAll[z].value<min)min=varAll[z].value;
+	}
+//bin divide
+max+=0.00001;
+//(max-min)/N+min;
+for(int i=0;i<N;i++)
+	{
+	float x=(max-min)/N*(i+0.5) + min ;
+	varNew->push_back(TRIO( 1, x ,0) );
+	varNew->push_back(TRIO( 21, x ,0) );
+	}
+float dx=(max-min)/N;
+for(int z=0;z<varAll.size();z++)
+	{
+	float x=varAll[z].value;
+	float w=varAll[z].weight;
+	float i=varAll[z].pdgId;
+	if( abs(i)<5 && abs(i)!=0 ) i=1;
+	else i=21;//compress including everything else in gluon
+	int n=floor( (x-min)/dx );
+	if(i==1){(*varNew)[2*n].weight+=w;	
+		if( fabs((*varNew)[2*n].value - varAll[z].value )> 0.01 ) printf("ERROR\n");
+		}
+	else { (*varNew)[2*n+1].weight+=w;	
+		if( fabs((*varNew)[2*n+1].value - varAll[z].value )> 0.01 ) printf("ERROR\n");}
+	}
+varAll.clear();
+varAll=*varNew;
+}
 
 
 float BaseAnalyzer::function(float x0, float a ,float b,float min,float max)
@@ -529,7 +571,7 @@ void BaseAnalyzer::ComputeDoubleMinFast(){
 	if(varName=="QGLMLP")
 		Loop(t_mc,4);
 	Loop(t_mc,32);
-
+	if(compress) CompressVector(1000);
 	pair<float,float> R_q,R_g;
 	if(!readStartPoints){
 	fprintf(stderr,"Not Read Start points\n");

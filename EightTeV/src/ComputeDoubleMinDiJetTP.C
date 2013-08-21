@@ -95,11 +95,11 @@ void Analyzer::Loop(TChain *t,int type){ //type|=4 : compute lmin,lmax; type|=1 
 			treeVar["etaJet1"]=jetEta[1];
 			treeVar["rhoPFJets"]=treeVar["rho"];
 		
-			bool sel1=false;
-			bool sel0=false;
+			bool sel1=true;
+			bool sel0=true;
 			//TP Pt 1<->0
-			if((treeVar["ptJet1"]<PtMin)||(treeVar["ptJet1"]>PtMax)||(fabs(treeVar["etaJet0"])<EtaMin)||(fabs(treeVar["etaJet0"])>EtaMax)|| (treeVar["rhoPF"]<RhoMin)||(treeVar["rhoPF"]>RhoMax))sel0=true;
-			if((treeVar["ptJet0"]<PtMin)||(treeVar["ptJet0"]>PtMax)||(fabs(treeVar["etaJet1"])<EtaMin)||(fabs(treeVar["etaJet1"])>EtaMax)|| (treeVar["rhoPF"]<RhoMin)||(treeVar["rhoPF"]>RhoMax))sel1=true;
+			if((treeVar["ptJet1"]<PtMin)||(treeVar["ptJet1"]>PtMax)||(fabs(treeVar["etaJet0"])<EtaMin)||(fabs(treeVar["etaJet0"])>EtaMax)|| (treeVar["rhoPF"]<RhoMin)||(treeVar["rhoPF"]>RhoMax))sel0=false;
+			if((treeVar["ptJet0"]<PtMin)||(treeVar["ptJet0"]>PtMax)||(fabs(treeVar["etaJet1"])<EtaMin)||(fabs(treeVar["etaJet1"])>EtaMax)|| (treeVar["rhoPF"]<RhoMin)||(treeVar["rhoPF"]>RhoMax))sel1=false;
 			
 			if(sel1==false && sel0==false) continue;
 			
@@ -229,8 +229,8 @@ void Analyzer::LoadBins(){
 		RhoBins.push_back(  pair<float,float>(0,100) );
 		
 		EtaBins.push_back(  pair<float,float>(0,2) );
-		EtaBins.push_back(  pair<float,float>(2.0,2.5) );
-		EtaBins.push_back(  pair<float,float>(2.5,3.0) );
+	//	EtaBins.push_back(  pair<float,float>(2.0,2.5) );
+	//	EtaBins.push_back(  pair<float,float>(2.5,3.0) );
 		EtaBins.push_back(  pair<float,float>(3,4.7) );
 	}
 
@@ -252,6 +252,7 @@ int ComputeDoubleMinDiJetTP(){
 		data  ->Add(TREEDATA);
 	Analyzer A;
 	A.nstep=20;
+	A.compress=1;
 	A.varName="QGLHisto";
 //	A.varName="QGLMLP";
 	A.CreateHisto();
@@ -281,7 +282,7 @@ TChain *mc=new TChain("tree_passedEvents");
 TChain *data=new TChain("tree_passedEvents");
 mc->Add(TREEMC);
 data  ->Add(TREEDATA);
-A->nstep=20; A->varName=varName;
+A->nstep=15; A->varName=varName;
 A->RhoMin=RhoMin; A->RhoMax=RhoMax;A->PtMin=PtMin;A->PtMax=PtMax; A->EtaMin=EtaMin;A->EtaMax=EtaMax;
 A->CreateHisto();
 A->SetTrees(mc,data);
@@ -329,13 +330,14 @@ TChain *data=new TChain("tree_passedEvents");
 cout<<"Opening Files "<<TREEMC<<" "<<TREEDATA<<endl;
 mc->Add(TREEMC);
 data  ->Add(TREEDATA);
-A->nstep=20; A->varName=varName;
+A->nstep=15; A->varName=varName;
 A->RhoMin=RhoMin; A->RhoMax=RhoMax;A->PtMin=PtMin;A->PtMax=PtMax; A->EtaMin=EtaMin;A->EtaMax=EtaMax;
 A->CreateHisto();
 A->SetTrees(mc,data);
 A->alpha=1;
 A->beta=0;
 A->Loop(mc,2);
+	A->compress=1;
 A->Loop(data,1);
 TH1F* h_mc0=(TH1F*)A->h_mc->Clone("h_mc0");h_mc0->SetLineColor(kGreen);
 A->lmin=lmin;
