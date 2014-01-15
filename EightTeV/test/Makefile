@@ -28,6 +28,9 @@ drawQGLDataMCPlots: DrawBase.o fitTools.o drawQGLDataMCPlots.cpp
 drawFractions: DrawBase.o fitTools.o drawFractions.cpp
 	$(CC) -Wall $(INCLUDES) -o drawFractions drawFractions.cpp DrawBase.o fitTools.o $(ROOTFLAG) $(EXTRALIBS) 
 
+drawCompareSyst: DrawBase.o fitTools.o drawCompareSyst.cpp
+	$(CC) -Wall $(INCLUDES) -o drawCompareSyst drawCompareSyst.cpp DrawBase.o fitTools.o $(ROOTFLAG) $(EXTRALIBS) 
+
 makeSunilTreeFlat: DrawBase.o fitTools.o Bins.o PUWeight.o QGLikelihoodCalculator.o QGMLPCalculator.o parameters.o makeSunilTreeFlat.cpp
 	$(CC) -Wall $(INCLUDES) -o makeSunilTreeFlat makeSunilTreeFlat.cpp DrawBase.o fitTools.o PUWeight.o Bins.o QGLikelihoodCalculator.o QGMLPCalculator.o parameters.o $(ROOTFLAG) $(EXTRALIBS) -L/afs/cern.ch/work/a/amarini/QGApproval/CMSSW_5_3_9_patch1/lib/slc5_amd64_gcc462 -lFWCoreParameterSet
 
